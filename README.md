@@ -16,9 +16,10 @@ In this work we are trying to build model that predicts the risk level of suicid
 data_sample_clpsy19: sample data
 TimeFeatures.ipynb: this script computes mean time intervals from any of the two posts in text from a certain topic, topics are defined by dictionaries we created. The script also include empath features.
 
-dictionaries: dictionarities from different topics
+* dictionaries: dictionarities from different topics
 
-clpsych_model.py:
+* clpsych_model.py: This file contains script to train the basic ML models. 
 
-Features.py
+* Features.py: This file contains script to Construct the features based on the users set provided in the basic training file. 
+
 
