@@ -11,7 +11,6 @@ In this work we are trying to build model that predicts the risk level of suicid
 * Mar 30     Short shared task papers + final system description paragraphs due (no late submissions accepted)
 
 
-
 ## Files Description:
 data_sample_clpsy19: sample data
 TimeFeatures.ipynb: this script computes mean time intervals from any of the two posts in text from a certain topic, topics are defined by dictionaries we created. The script also include empath features.
@@ -22,4 +21,9 @@ TimeFeatures.ipynb: this script computes mean time intervals from any of the two
 
 * Features.py: This file contains script to Construct the features based on the users set provided in the basic training file [Features extraction]. 
 
+##Folders Description:
+dictionaries: dictionarities from different topics
 
+data_sample_clpsy19: sample data
+
+SampleShareTask: more data for feature observations (Posts from suicide watch in Jan, 2019 and all the posts of the authors from other subreddit)
