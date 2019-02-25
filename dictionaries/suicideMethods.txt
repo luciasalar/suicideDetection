@@ -1,0 +1,1 @@
+'overdose', 'cutting', 'drowning', 'suffocate', 'hypothermia', 'jumping', 'train', 'shotgun', 'gas', 'gun', 'hanging', 'train', 'carbon monoxide', 'charcoal', 'chlorine', 'plastic bag', 'N2O', 'knife'

@@ -1,0 +1,1 @@
+'homeless', 'breakup', 'infidelity', 'divorce', 'terminal illness', 'chronic illness', 'chronic disease', 'serious illness', 'death', 'died', 'unemployed', 'fired at work', 'alcohol dependent', 'dumped me', 'dump me', 'relationshipadvice'
