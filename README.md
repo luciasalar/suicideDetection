@@ -12,7 +12,7 @@ In this work we are trying to build model that predicts the risk level of suicid
 
 
 
-##Files Description:
+## Files Description:
 data_sample_clpsy19: sample data
 TimeFeatures.ipynb: this script computes mean time intervals from any of the two posts in text from a certain topic, topics are defined by dictionaries we created. The script also include empath features.
 
