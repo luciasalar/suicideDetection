@@ -1,6 +1,6 @@
 # Similar Minds Post Alike: Assessment of Suicide Risk Estimation Using Behavioural Data
 ## clpsych shared task
-In this work we are trying to build model that predict the risk level based on users behavioural data. 
+In this work we are trying to build model that predicts the risk level of suicide based on users behavioural data. 
 * Task B: Risk Assessment for SW posters based on their SW postings and other Reddit postings
 
 * Link to Overleaf latex file https://www.overleaf.com/1411918554ftzbvbgrjtcs
