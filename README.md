@@ -20,6 +20,6 @@ TimeFeatures.ipynb: this script computes mean time intervals from any of the two
 
 * clpsych_model.py: This file contains script to train the basic ML models. 
 
-* Features.py: This file contains script to Construct the features based on the users set provided in the basic training file. 
+* Features.py: This file contains script to Construct the features based on the users set provided in the basic training file [Features extraction]. 
 
 
