@@ -10,3 +10,15 @@ In this work we are trying to build model that predicts the risk level of suicid
 * Mar 30     Final system description paragraphs due (no late submissions accepted)
 * Mar 30     Short shared task papers + final system description paragraphs due (no late submissions accepted)
 
+
+
+##Files Description:
+data_sample_clpsy19: sample data
+TimeFeatures.ipynb: this script computes mean time intervals from any of the two posts in text from a certain topic, topics are defined by dictionaries we created. The script also include empath features.
+
+dictionaries: dictionarities from different topics
+
+clpsych_model.py:
+
+Features.py
+
