@@ -21,9 +21,18 @@ TimeFeatures.ipynb: this script computes mean time intervals from any of the two
 
 * Features.py: This file contains script to Construct the features based on the users set provided in the basic training file [Features extraction]. 
 
+* ExtractDictionsFromHTML.ipynb: this file extract dictions from webpages 
+
+
 ##Folders Description:
 dictionaries: dictionarities from different topics
 
 data_sample_clpsy19: sample data
 
 SampleShareTask: more data for feature observations (Posts from suicide watch in Jan, 2019 and all the posts of the authors from other subreddit)
+
+* Empath: features extracted from empath and which empath feature might be useful for our classification task
+
+
+
+
