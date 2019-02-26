@@ -33,6 +33,8 @@ SampleShareTask: more data for feature observations (Posts from suicide watch in
 
 * Empath: features extracted from empath and which empath feature might be useful for our classification task
 
+* senti_value: This file read each user post and assign the sentiment value for each file to prepare it for next step of feature construction.
+
 
 
 
