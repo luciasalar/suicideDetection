@@ -1,0 +1,9 @@
+I suggest the columns below are important to our classification problem:
+
+related to self-esteem: achievement, shame
+affect: affection, aggression, anger, cheerfulness, disappointment, disgust, dispute, emotional, fear, fun, hate, joy, love, negative emotion, nervousness, optimism, pain, positive_emotion, suffering
+concerns in life: alcohol, appearance, attractive, banking, money
+health: body, health, injury, medical_emergency(drug)
+death
+friends
+help
