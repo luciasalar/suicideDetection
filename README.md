@@ -33,6 +33,8 @@ SampleShareTask: more data for feature observations (Posts from suicide watch in
 
 * senti_value: This file read each user post and assign the sentiment value for each file to prepare it for next step of feature construction.
 
+*  	reddit_scrape: This script read each user's postlist and provide the list of commenters. 
+
 
 
 
