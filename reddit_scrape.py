@@ -11,11 +11,11 @@ import praw.exceptions  as exp
 #from urllib import HTTPError
 import requests
 #url  https://stackoverflow.com/questions/36366388/get-all-comments-from-a-specific-reddit-thread-in-python
-reddit = praw.Reddit(client_id='JQNYlic9hrdOmQ',
-                     client_secret='EnK47Bx63Zh6S_nOKyDZIIPy9Ls',
-                     password='1548Ou38237',
-                     user_agent='N_processing',
-                     username='AbeerID ')
+reddit = praw.Reddit(client_id='OmQ',
+                     client_secret='Ls',
+                     password='7',
+                     user_agent='',
+                     username=' ')
 
 #print(reddit.user.me())
 
