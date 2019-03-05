@@ -202,11 +202,16 @@ subsetDictPosts(file, SuicideMethods, 'med_title', 'med_body', 'med_subre')
 suicideWatch = file[file['subreddit'] == 'suicidewatch']
 med = suicideWatch[(suicideWatch['med_body'] == True) | (suicideWatch['med_title'] == True)]
 
+#get suicideWatch post
+SW = file[file['subreddit'] == 'suicidewatch']
+SWFreq = getFrequencyFeature(SW, 'SWPostingInterval','SWFrequency', 'SWFreq', 'SWWordCount',3)
+
 
 #return feature table
 methods = checkDictFea(med) 
 #merge features
 FreqFea = pd.merge(FreqFea, methods, on ='user_id', how = 'left')
+FreqFea = pd.merge(FreqFea, SWFreq, on ='user_id', how = 'left')
 FreqFea.fillna(0, inplace=True)
 
 FreqFea.to_csv(path+'FreqFea.csv')
