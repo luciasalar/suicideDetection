@@ -57,8 +57,8 @@ def getGeneralEmpath(file, EmpathVars):
     return empath
 
 def lowerCase(file):
-    file['post_title'] = file['post_title'].apply(lambda x: x.lower())
-    file['subreddit'] = file['subreddit'].apply(lambda x: x.lower())
+    file['post_title'] = file['post_title'].apply(lambda x: x.lower() if type(x) is str else 'NULL')
+    file['subreddit'] = file['subreddit'].apply(lambda x: x.lower() if type(x) is str else 'NULL')
     file['post_body'] = file['post_body'].apply(lambda x: x.lower() if type(x) is str else 'NULL')
     return file
 
@@ -92,8 +92,11 @@ def mergeFrames(pathTofile):
 
 lexicon = Empath()
 
+print('step 1')
 path = '/Users/lucia/phd_work/suicideDetection/'
-file = pd.read_csv(path + '/SampleShareTask/test.csv')
+#file = pd.read_csv(path + '/SampleShareTask/test.csv')
+file = pd.read_csv('/Users/lucia/phd_work/ClpsyData/clpsych19_training_data/shared_task_posts.csv')
+
 
 PsyList = readDictionaries(path +'/dictionaries/psyList.txt')
 file = lowerCase(file)
@@ -104,12 +107,15 @@ EmpathVars = ['post_id','user_id', 'achievement', 'shame', 'affection', 'aggress
 
 EmpathVars1 = ['post_id','user_id', 'anger', 'disappointment', 'negative_emotion', 'health', 'injury', 'medical_emergency', 'death']
 
+print('step 2')
 fea = getDictionsEmpath(file, PsyList, EmpathVars1)
+print('step 3')
 feaAll = getGeneralEmpath(file, EmpathVars)
+
 fea.to_csv(path+'/features/emPathFea/fea.csv')
 feaAll.to_csv(path+'/features/emPathFea/feaAll.csv')
 
 
 
-mergeFrames(path + "/features/emPathFea/*.csv")
+#mergeFrames(path + "/features/emPathFea/*.csv")
 

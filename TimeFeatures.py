@@ -159,34 +159,42 @@ def subsetDictPosts(file, dictionary, newTitle, newBody, newSubreddit):
 
 #path = '/home/lucia/phd_work/shareTask/CLpsych/'
 path = '/Users/lucia/phd_work/suicideDetection/'
-file = pd.read_csv(path + '/SampleShareTask/test.csv')
+#file = pd.read_csv(path + '/data_sample_clpsych19/user10146.posts.csv')
+
+file = pd.read_csv('/Users/lucia/phd_work/ClpsyData/clpsych19_training_data/shared_task_posts.csv')
+print('step 1')
+file['timestamp'] = file['timestamp'].apply(lambda x: datetime.utcfromtimestamp(x).strftime('%Y-%m-%d %H:%M:%S'))
 FreqTable = getFrequencyFeature(file, 'postingInterval','postingFrequency', 'generalMoreFreq', 'generalWordCount', 6)
+FreqTable.to_csv(path+'FreqTable.csv')
 
-
-#get text with mental health dictions
-file['post_title'] = file['post_title'].apply(lambda x: x.lower())
+# #get text with mental health dictions
+print('step 2')
+file['post_title'] = file['post_title'].apply(lambda x: x.lower() if type(x) is str else 'NULL')
 file['post_body'] = file['post_body'].apply(lambda x: x.lower() if type(x) is str else 'NULL')
 
-#read dict
+# #read dict
 PsyList = readDictionaries(path +'/dictionaries/psyList.txt')
-
+print('step 3')
 #return boolean table
 file['Psy_title'] = file.apply(lambda row: True if findText(row["post_title"], PsyList) else False, axis=1)
 file['Psy_body'] = file.apply(lambda row: True if findText(row["post_body"], PsyList) else False, axis=1)
 
 
-#clean text, lower cases
-file['post_title'] = file['post_title'].apply(lambda x: x.lower())
-file['subreddit'] = file['subreddit'].apply(lambda x: x.lower())
+# # #clean text, lower cases
+file['post_title'] = file['post_title'].apply(lambda x: x.lower()if type(x) is str else 'NULL')
+file['subreddit'] = file['subreddit'].apply(lambda x: x.lower() if type(x) is str else 'NULL')
 file['post_body'] = file['post_body'].apply(lambda x: x.lower() if type(x) is str else 'NULL')
 
 #subset data according to boolean
+print('step 4')
 subsetDictPosts(file, PsyList, 'Psy_title', 'Psy_body', 'Psy_subre')
 MH = file[file['Psy_body'] == True]
 MHF = getFrequencyFeature(MH, 'healthPostingInterval','healthPostingFrequency', 'healthMoreFreq', 'healthWordCount',3)
 #merge features
 FreqFea = pd.merge(FreqTable, MHF, on ='user_id', how = 'left')
+FreqFea.to_csv(path+'FreqFea.csv1')
 
+print('step 5')
 #check suicide methods
 SuicideMethods = readDictionaries(path + '/dictionaries/suicideMethods.txt')
 subsetDictPosts(file, SuicideMethods, 'med_title', 'med_body', 'med_subre')
@@ -200,7 +208,9 @@ methods = checkDictFea(med)
 #merge features
 FreqFea = pd.merge(FreqFea, methods, on ='user_id', how = 'left')
 FreqFea.fillna(0, inplace=True)
+
 FreqFea.to_csv(path+'FreqFea.csv')
+
 
 
 

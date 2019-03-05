@@ -2,7 +2,17 @@
 ## clpsych shared task
 In this work we are trying to build model that predicts the risk level of suicide based on users behavioural data. 
 * Task B: Risk Assessment for SW posters based on their SW postings and other Reddit postings
+## The Training files to be used in this task are:
+* Task_B_trainin.posts.csv contains 57016 records with these information[ post_id, user_id, subreddit]
+* Crowd_train.csv This file contain the main risk level lables contains 994 records with 497 blank lables ?!
+* 1. risk level a: 127 records (users).
+* 2. risk level b: 50 records (users).
+* 3. risk level c: 113 records (users).
+* 4. risk level d: 206 records (users). 
 
+* Shared_task_posts.csv which contains 1048576 records [post_id,user_id,Timestamp, subreddit, post_title, post_body]
+
+## link to the shared latex file
 * Link to Overleaf latex file https://www.overleaf.com/1411918554ftzbvbgrjtcs
 ## Main Dates
 * Mar 18     Preliminary system description paragraphs due (for our overview shared task paper)
