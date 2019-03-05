@@ -30,15 +30,13 @@ def RateSentiment(sentiString):
 #An example to illustrate calling the process.
 
 
-def prepare_file_features(senti_list,userid):
-    original_posts_file="C:/Users/Abeer/Dropbox/clpsych_workshop/data_sample_clpsych19/user"+str(users_ids[i])+".posts.csv"
-    original_posts_df = pd.read_csv(original_posts_file, sep=',',encoding='latin1')
+def prepare_file_features(senti_list):
+    #="C:/Users/Abeer/Dropbox/clpsych_workshop/data_sample_clpsych19/user"+str(users_ids[i])+".posts.csv"
+    original_posts_df = pd.read_csv(original_posts_file, sep=',',encoding='latin1')    
     
-    
-    new_CSV_file="C:/Users/Abeer/Dropbox/clpsych_workshop/data_sample_clpsych19/user"+str(users_ids[i])+"_posts_sentiment.csv"
+    new_CSV_file="C:/Users/Abeer/Dropbox/clpsych_workshop/data_sample_clpsych19/posts_sentiment.csv"
     file_new= open(new_CSV_file,'w')
-    new_test_df = pd.read_csv(new_CSV_file, sep=',',encoding='latin1',names=["post_id",	"user_id",	"timestamp",	"subreddit"	,"post_title",	"post_body" , "sentiment"])
-    
+    new_test_df = pd.read_csv(new_CSV_file, sep=',',encoding='latin1',names=["post_id",	"user_id",	"timestamp",	"subreddit"	,"post_title",	"post_body" , "sentiment"])    
     #convert timestamp to time
 
     index=0
@@ -70,8 +68,8 @@ def prepare_file_features(senti_list,userid):
         subreddit= original_posts_df.at[index,'subreddit'] 
         post_title= original_posts_df.at[index,'post_title'] 
         post_body= original_posts_df.at[index,'post_body']
-             
-        
+                     
+       
         
         new_test_df.loc[index, 'post_id'] = post_id
         new_test_df.loc[index, 'user_id'] =userID
@@ -89,38 +87,20 @@ def prepare_file_features(senti_list,userid):
 
 
 if __name__ == '__main__':
-    
-    training_file="C:/Users/Abeer/Dropbox/clpsych_workshop/Training_Testing/training_clpsych.csv"
-    Testing_file="C:/Users/Abeer/Dropbox/clpsych_workshop/Training_Testing/testing_clpsych.csv"
-    
-    training_data = pd.read_csv(training_file, sep=',', encoding='latin1', low_memory=False) 
-    users_ids=training_data["UserID"]
-    #print(users_ids[3])
-    print("training shape")
-    print(training_data.shape)
-    
-    features_values_peruser={}
-    #Features_dictionary={"123":{'mean_time':3}}
-    Features_dictionary={}
-    
-    
-    
-    for i in range (0,len(users_ids)):
-        #get the user's file (posts collection)
-        userfile=pd.read_csv("C:/Users/Abeer/Dropbox/clpsych_workshop/data_sample_clpsych19/user"+str(users_ids[i])+".posts.csv", sep=',', encoding='latin1', low_memory=False)        
+        userfile=pd.read_csv("C:/Users/Abeer/Dropbox/clpsych_workshop/Training_Testing/clpsych19_training_data/clpsych19_training_data/shared_task_posts.csv", sep=',', encoding='latin1', low_memory=False)        
         postslist=userfile['post_body']
-        
-        list_senti_strength_user=[]
+        #the sentiment of 10,48576 records 
+        list_senti=[]
         for post in postslist:
             if post is None:
-                list_senti_strength_user.append("")
+                list_senti.append("")
             else:    
-                list_senti_strength_user.append(RateSentiment(post))
+                list_senti.append(RateSentiment(post))
                 
                 
-        #after analyzing the sentiment for each user we will save the new results in new user file    
-        prepare_file_features(list_senti_strength_user,str(users_ids[i]))
-
+        #after analyzing the sentiment for each user we will save the new results in new user file
+        prepare_file_features(list_senti)
+       
 
 #The above is OK for one text but inefficient to repeatedly call for many texts. Try instead: 
 #  either modify the above to submit a file
