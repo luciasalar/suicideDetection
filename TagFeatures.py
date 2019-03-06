@@ -20,7 +20,7 @@ def getTagCounts(file):
         tagList =[]
         for item in val:
             tagList.append(item[1])
-        #print(len(tagList)) normalize by number of words 
+        #print(len(tagList)) normalize by number of words in the post
         tagCountDict[key] = [tagList.count('NN')/len(tagList), tagList.count('NNS')/len(tagList), tagList.count('JJR')/len(tagList), tagList.count('MD')/len(tagList),tagList.count('NNP')/len(tagList),
                             tagList.count('NNPS')/len(tagList),tagList.count('PDT')/len(tagList),tagList.count('POS')/len(tagList),tagList.count('PRP')/len(tagList),tagList.count('PRP$')/len(tagList),
                             tagList.count('VB')/len(tagList),tagList.count('VBD')/len(tagList),tagList.count('VBG')/len(tagList),tagList.count('VBN')/len(tagList), tagList.count('VBZ')/len(tagList)]   
