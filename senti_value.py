@@ -30,9 +30,9 @@ def RateSentiment(sentiString):
 #An example to illustrate calling the process.
 
 
-def prepare_file_features(senti_list):
+def prepare_file_features(senti_list,userfile):
     #="C:/Users/Abeer/Dropbox/clpsych_workshop/data_sample_clpsych19/user"+str(users_ids[i])+".posts.csv"
-    original_posts_df = pd.read_csv(original_posts_file, sep=',',encoding='latin1')    
+    original_posts_df = pd.read_csv(userfile, sep=',',encoding='latin1')    
     
     new_CSV_file="C:/Users/Abeer/Dropbox/clpsych_workshop/data_sample_clpsych19/posts_sentiment.csv"
     file_new= open(new_CSV_file,'w')
@@ -99,7 +99,7 @@ if __name__ == '__main__':
                 
                 
         #after analyzing the sentiment for each user we will save the new results in new user file
-        prepare_file_features(list_senti)
+        prepare_file_features(list_senti,userfile)
        
 
 #The above is OK for one text but inefficient to repeatedly call for many texts. Try instead: 
