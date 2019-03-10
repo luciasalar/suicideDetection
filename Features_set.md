@@ -21,7 +21,7 @@ This set concerns with capturing the user posting behaviour as sign of similarit
 number of tags in the posts is normalized by word count of the posts. nouns(NN), plural nouns (NNS), comparative words (JJR), modal (MD), proper nound (NNP), plural proper (NNPS), predeterminer (PDT), possessive ending(POS), personal pronoun (PRP), possessive pronoun(PRP$), verbs (VB) (VBD) (VBG) (VBN) (VBZ). 
 
 ## motivations:
-* we summarise a few suicide motivation: financial problems, drug and drinking, mental health, relationship problem suicide methods. Each motivation is corresponded with a dictionary. We check whether post body cantain these words. Then we aggregate the number of suicide motivation for each user (features/motivations.csv) 
+* we summarise a few suicide motivation (base on SW posts only because we need to restruct the context): financial problems, drug and drinking, mental health, relationship problem suicide methods. Each motivation is corresponded with a dictionary. We check whether post body cantain these words. Then we aggregate the number of suicide motivation for each user (features/motivations.csv) 
 
 features/feaCor2.csv shows the correlations between motivation var, freq var and the labels
 
