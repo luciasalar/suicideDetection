@@ -8,6 +8,7 @@ Created on Tue Feb 26 16:16:21 2019
 import subprocess
 import shlex
 import pandas as pd 
+import os
 def RateSentiment(sentiString):
     #open a subprocess using shlex to get the command line string into the correct args list format
     #Modify the location of SentiStrength.jar and D:/SentiStrength_Data/ if necessary
@@ -34,7 +35,7 @@ def prepare_file_features(list_senti,user,postslist):
     #="C:/Users/Abeer/Dropbox/clpsych_workshop/data_sample_clpsych19/user"+str(users_ids[i])+".posts.csv"
     #original_posts_df = pd.read_csv(userfile, sep=',',encoding='latin1')    
     
-    new_CSV_file="C:/Users/Abeer/Dropbox/clpsych_workshop/data_sample_clpsych19/posts_sentiment_"+str(user)+".csv"
+    new_CSV_file="C:/Users/Abeer/Dropbox/clpsych_workshop/Sentiment_files/posts_sentiment_"+str(user)+".csv"
     file_new= open(new_CSV_file,'w')
     new_test_df = pd.read_csv(new_CSV_file, sep=',',encoding='latin1',names=["post_id","sentiment"])    
     #convert timestamp to time
@@ -90,7 +91,34 @@ if __name__ == '__main__':
         #postslist=userfile['post_id']
         postslist=userfile
         
-        for user in users_ids:
+        
+        #----------------------user id------------------
+        original_id=[]
+        users_ids_file='C:/Users/Abeer/Dropbox/clpsych_workshop/Sentiment_files/'
+        for filename in os.listdir(users_ids_file):
+#for entry in it:
+         if filename.endswith('.csv'):
+            #userID= filename.partition('posts_sentiment_')[1]
+            userID= filename.replace('posts_sentiment_','')
+            userID=userID.replace('.csv','')
+            print(userID)
+            
+            print(userID)
+            userID=userID.replace('\n',"")
+            
+#            if "_Fav_url_tweets.csv" in userID:
+#                print("change ")
+#            else:
+            original_id.insert(len(original_id),int(userID))
+               
+     
+        
+        
+        #-----------------------------------------------
+        
+        
+        newIDs=list(set(users_ids)-set(original_id))
+        for user in newIDs:
             #list of sentiment for each user
             list_senti=[]
             post_ids_user=Task_B_posts.loc[(Task_B_posts["user_id"] == user)]
