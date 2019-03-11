@@ -41,6 +41,10 @@ def prepare_file_features(list_senti,user,postslist):
     #convert timestamp to time
 
     index=0
+    print("list length")
+    print(len(postslist))
+    postslist=postslist.tolist()
+    print(postslist)
     for sentiments in list_senti:
         print(sentiments)
         sentiment_results=sentiments.split(" ")
@@ -62,7 +66,8 @@ def prepare_file_features(list_senti,user,postslist):
         else:
             finalSentimint='0' #nutral
         
-        
+        print(postslist)
+        print(postslist[index])
         new_test_df.loc[index, 'post_id'] = postslist[index]
         new_test_df.loc[index, 'sentiment'] = finalSentimint
                    
