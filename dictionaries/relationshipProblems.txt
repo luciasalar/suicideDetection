@@ -1,0 +1,1 @@
+'girlfriend','boyfriend', 'gf', 'bf', 'reject', 'broke up', 'wife', 'husband', 'ex'
