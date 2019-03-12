@@ -25,7 +25,7 @@ number of tags in the posts is normalized by word count of the posts. nouns(NN),
 
 features/feaCor2.csv shows the correlations between motivation var, freq var and the labels
 
-
-
+## Topic sentiment
+We grab sentences involve a certain topic: family/partner/myself, then we use sentistrength to detect the sentiment of these sentences. Average Topic sentiment is used as user level feature /features/topicSentiment.csv
 
 
