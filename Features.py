@@ -121,7 +121,7 @@ def prepare_file_features(Features,file):
     new_CSV_file="C:/Users/Abeer/Dropbox/clpsych_workshop/Training_features.csv"
     file_new= open(new_CSV_file,'w')
     new_test_df = pd.read_csv(new_CSV_file, sep=',',encoding='latin1',names=["UserID","mean_time", "Risk_Level"])
-    
+   
     #convert timestamp to time
 
     index=0
@@ -141,12 +141,46 @@ def prepare_file_features(Features,file):
     new_test_df.to_csv("C:/Users/Abeer/Dropbox/clpsych_workshop/Training_features.csv", index=False,sep=',') 
     file_new.close()
 
+def Features_constructor_sentiment_only(training_file,Testing_file):
+    new_CSV_file="C:/Users/Abeer/Dropbox/clpsych_workshop/Training_features_sentiment.csv"
+    file_new= open(new_CSV_file,'w')
+    new_test_df = pd.read_csv(new_CSV_file, sep=',',encoding='latin1',names=["user_id","sentiment_score", "raw_label"])
+    
+    sentiment_profile="C:/Users/Abeer/Dropbox/clpsych_workshop/users_sentiment_profile.csv"
+    sentiment_profile_data=pd.read_csv(sentiment_profile, sep=',', encoding='latin1', low_memory=False)        
+    
+    file_data=pd.read_csv(training_file, sep=',', encoding='latin1', low_memory=False)        
+    usersIds=  file_data["user_id"]
+    #convert timestamp to time
+
+    index=0
+    for y in usersIds:
+        
+        userID= file_data.at[index,'user_id']
+        risk_level= file_data.at[index,'raw_label']        
+        new_test_df.loc[index, 'user_id'] = userID
+        new_test_df.loc[index, 'raw_label'] =risk_level
+        
+        #features
+        senti_score=sentiment_profile_data[sentiment_profile_data["user_id"] == userID]
+        senti_score=senti_score["sentiment"]
+        print(senti_score)
+        value=senti_score.tolist()
+        new_test_df.loc[index,'sentiment_score']=value[0]
+        
+                   
+        index=index+1
+        
+    new_test_df.to_csv("C:/Users/Abeer/Dropbox/clpsych_workshop/Training_features_sentiment.csv", index=False,sep=',') 
+    file_new.close()
+    
 
 
 
 if __name__ == '__main__':
     
-   training_file="C:/Users/Abeer/Dropbox/clpsych_workshop/Training_Testing/training_clpsych.csv"
+   training_file="C:/Users/Abeer/Dropbox/clpsych_workshop/Training_Testing/clpsych19_training_data/clpsych19_training_data/crowd_train.csv"
    Testing_file="C:/Users/Abeer/Dropbox/clpsych_workshop/Training_Testing/testing_clpsych.csv"
  
-   Features_constructor(training_file,Testing_file)
+   #Features_constructor(training_file,training_file)
+   Features_constructor_sentiment_only(training_file,Testing_file)
