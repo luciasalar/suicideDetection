@@ -57,6 +57,7 @@ illegalDrugList = readDictionaries(path +'suicideDetection/dictionaries/illegalD
 mentalHealthList = readDictionaries(path +'suicideDetection/dictionaries/mentalHealth.txt')
 relationshipProblems = readDictionaries(path +'suicideDetection/dictionaries/relationshipProblems.txt')
 suicideMethods = readDictionaries(path +'suicideDetection/dictionaries/suicideMethods.txt')
+hopelessList = readDictionaries(path +'suicideDetection/dictionaries/hopeless.txt')
 
 
 print('check wordList')
@@ -65,18 +66,31 @@ illegalDrugProblems = subsetDictPosts(file, illegalDrugList, 'drug_body')
 mentalHealthProblems = subsetDictPosts(file, mentalHealthList,  'mental_body')
 relationshipProblems = subsetDictPosts(file, relationshipProblems,  'rela_body')
 suicideMethods = subsetDictPosts(file, suicideMethods, 'suicide_body')
+hopeless = subsetDictPosts(file, hopelessList, 'hopeless_body')
+
+
 
 print('merge results')
 motivations = pd.merge(FinancialProblems, illegalDrugProblems, on = 'user_id')
 motivations = pd.merge(motivations, mentalHealthProblems, on = 'user_id')
 motivations = pd.merge(motivations, relationshipProblems, on = 'user_id')
 motivations = pd.merge(motivations, suicideMethods, on = 'user_id')
-motivations['motivations'] = motivations.iloc[:,1:5].sum(axis = 1, skipna = True) 
+motivations = pd.merge(motivations, hopeless, on = 'user_id')
+motivations['motivations'] = motivations.iloc[:,1:6].sum(axis = 1, skipna = True) 
 
 motivations.to_csv(path + 'suicideDetection/features/motivations.csv' )
 
 
 
+print('get feature correlation matrix')
+freq = pd.read_csv(path + 'suicideDetection/features/Freqfea.csv')
+label = pd.read_csv(path + 'data/clpsych19_training_data/crowd_train.csv')
+label['raw_label'] = label['raw_label'].replace(['a', 'b', 'c', 'd'], [1, 2, 3, 4]) 
+moti = pd.read_csv(path + 'suicideDetection/features/motivations.csv')
+fea = pd.merge(label, moti, on = 'user_id', how = 'right')
+fea = pd.merge(fea, freq, on = 'user_id')
+feaCor = fea.corr()
+feaCor.to_csv(path + 'suicideDetection/features/FeaCor2.csv')
 
 
 
