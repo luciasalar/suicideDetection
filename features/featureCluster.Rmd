@@ -16,9 +16,11 @@ library(mclust)
 ## Cluster Frequency and motivation feature 
 
 ```{r }
-FreqFea <- read.csv("/Users/lucia/phd_work/Clpsy/suicideDetection/features/FreqFea.csv")
-moti <-  read.csv("/Users/lucia/phd_work/Clpsy/suicideDetection/features/motivations.csv")
-labels <- read.csv("/Users/lucia/phd_work/Clpsy/data/clpsych19_training_data/crowd_train.csv")
+#setwd('/home/lucia/phd_work/shareTask/')
+#setwd('/Users/lucia/phd_work/Clpsy')
+FreqFea <- read.csv("/home/lucia/phd_work/shareTask/suicideDetection/features/FreqFea.csv")
+moti <-  read.csv("/home/lucia/phd_work/shareTask/suicideDetection/features/motivations.csv")
+labels <- read.csv("/home/lucia/phd_work/shareTask/data/clpsych19_training_data/crowd_train.csv")
 
 FreqFeaS <- FreqFea[, c(2,7,12:15)]
 motiS <- moti[, c(2:9)]
@@ -26,7 +28,6 @@ motiS <- moti[, c(2:9)]
 FreqFeaL <- merge(labels, FreqFeaS, by ='user_id', all.y = T)
 FreqFeaL<- merge(FreqFeaL, moti, by ='user_id', all.y = T)
 FreqFeaL <-  FreqFeaL[,-8]  
-  
 freq <- FreqFeaL[3:14]
 
 ```
@@ -53,14 +54,14 @@ table(clusters, FreqFeaL$raw_label)
 ```
 
 # kmeans
-```{r }
+```{r kmeans}
 clusters <- kmeans(g.dist, 4, algorithm = 'Forgy')
 table(clusters$cluster)
 table(clusters$cluster, FreqFeaL$raw_label)
 ```
 
 #mclust
-```{r }
+```{r mclust}
 getMclust <- function (gowerMatrix){
   BIC <- mclustBIC(as.matrix(g.dist))
   plot(BIC)
@@ -72,7 +73,46 @@ getMclust <- function (gowerMatrix){
 clusters <- getMclust(g.dist)
 ```
 
-```{r }
-FreqFea <- read.csv("/Users/lucia/phd_work/Clpsy/data/clpsych19_training_data/Btrain_NoNoise_SW.csv")
+# adding sentiment feature 
+```{r adding sentiment feature}
+getUsertopicSent <- function(Topicfile){
+  topicSent <- read.csv(Topicfile)
+  getid <- read.csv("/home/lucia/phd_work/shareTask/data/clpsych19_training_data/BtrainNoNoiseSWStress.csv")
+  getid <- getid[,c('user_id', 'post_id')]
+  topicSent <- merge(topicSent, getid, by = 'post_id', all.x = T)
+  topicSentMean <- aggregate(topicSent[, 3:5], list(topicSent$user_id), mean)
+  colnames(topicSentMean)[1] <- "user_id"
+  return (topicSentMean)
+}
+
+topicSentMean <- getUsertopicSent("/home/lucia/phd_work/shareTask/suicideDetection/features/topicSentiment.csv")
+write.csv(topicSentMean, "/home/lucia/phd_work/shareTask/suicideDetection/features/UsertopicSentiment.csv")
+
+topicSentMean2 <- getUsertopicSent("/home/lucia/phd_work/shareTask/suicideDetection/features/topicSentiment2.csv")
+write.csv(topicSentMean2, "/home/lucia/phd_work/shareTask/suicideDetection/features/UsertopicSentiment2.csv")
 
 ```
+
+
+```{r }
+freqSent <- merge(freq, topicSentMean)
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
