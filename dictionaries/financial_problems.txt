@@ -1,1 +1,1 @@
-'money', 'financial', 'homeless', 'rent', 'tuition', 'bankrupt'
+'money', 'financial', 'homeless', 'rent', 'tuition', 'bankrupt', 'debt', 'bill'

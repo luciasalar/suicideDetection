@@ -229,6 +229,6 @@ def prepare_file_output(y_values,target,test_df,index):
 if __name__ == '__main__':
     
    training_file="C:/Users/Abeer/Dropbox/clpsych_workshop/Training_Testing/training_clpsych.csv"
-   Testing_file="C:/Users/Abeer/Dropbox/clpsych_workshop/Training_Testing/testing_clpsych.csv"
+   Testing_file="C:/Users/Abeer/Dropbox/clpsych_workshop/Training_Testing/training_clpsych.csv"
    
    start(training_file,Testing_file)
