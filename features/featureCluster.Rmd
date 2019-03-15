@@ -1,0 +1,78 @@
+---
+title: "featureCluster"
+author: "lushi"
+date: "14/03/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(cluster)  # we'll use these packages
+library(fpc)
+library(mclust)
+```
+
+
+## Cluster Frequency and motivation feature 
+
+```{r }
+FreqFea <- read.csv("/Users/lucia/phd_work/Clpsy/suicideDetection/features/FreqFea.csv")
+moti <-  read.csv("/Users/lucia/phd_work/Clpsy/suicideDetection/features/motivations.csv")
+labels <- read.csv("/Users/lucia/phd_work/Clpsy/data/clpsych19_training_data/crowd_train.csv")
+
+FreqFeaS <- FreqFea[, c(2,7,12:15)]
+motiS <- moti[, c(2:9)]
+
+FreqFeaL <- merge(labels, FreqFeaS, by ='user_id', all.y = T)
+FreqFeaL<- merge(FreqFeaL, moti, by ='user_id', all.y = T)
+FreqFeaL <-  FreqFeaL[,-8]  
+  
+freq <- FreqFeaL[3:14]
+
+```
+
+#get gower distance
+```{r }
+getGower <- function(data) {
+  g.dist <-  daisy(data, metric="gower", type=list(asymm = c(4, 6:11)))
+  print(summary(g.dist))
+  return (g.dist)    
+}
+
+g.dist <- getGower(freq)
+
+```
+
+```{r }
+hc.c = hclust(g.dist, method="complete")
+clusters <- cutree(hc.c, k=4)
+table(clusters)
+#plot(hc.c)
+table(clusters, FreqFeaL$raw_label)
+
+```
+
+# kmeans
+```{r }
+clusters <- kmeans(g.dist, 4, algorithm = 'Forgy')
+table(clusters$cluster)
+table(clusters$cluster, FreqFeaL$raw_label)
+```
+
+#mclust
+```{r }
+getMclust <- function (gowerMatrix){
+  BIC <- mclustBIC(as.matrix(g.dist))
+  plot(BIC)
+  mod1 <- Mclust(as.matrix(g.dist), x = BIC, G= 5)
+  print(table(FreqFeaL$raw_label, mod1$classification))
+  return (mod1$classification)
+}
+
+clusters <- getMclust(g.dist)
+```
+
+```{r }
+FreqFea <- read.csv("/Users/lucia/phd_work/Clpsy/data/clpsych19_training_data/Btrain_NoNoise_SW.csv")
+
+```
