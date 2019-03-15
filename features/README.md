@@ -22,6 +22,8 @@ FeaCor2.csv: feature correlation with motivations and frequency feature
 
 FeaCor3.csv: feature correlation with motivations2 and frequency feature (we can see that motivations 2 has better correlations with labels)
 
-topicSentiment.csv: topicSentiment from SW posts
+topicSentiment.csv: topicSentiment from SW posts (topicSentiment has higher correlation with labels)
 
 topicSentiment2.csv: topicSentiment from SW posts + stress posts
+
+FreqSentiMotiTopiFea.csv: set of user level features combining frequency, sentiment, motivation 

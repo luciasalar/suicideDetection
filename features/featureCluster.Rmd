@@ -19,7 +19,7 @@ library(mclust)
 #setwd('/home/lucia/phd_work/shareTask/')
 #setwd('/Users/lucia/phd_work/Clpsy')
 FreqFea <- read.csv("/home/lucia/phd_work/shareTask/suicideDetection/features/FreqFea.csv")
-moti <-  read.csv("/home/lucia/phd_work/shareTask/suicideDetection/features/motivations.csv")
+moti <-  read.csv("/home/lucia/phd_work/shareTask/suicideDetection/features/motivations2.csv")
 labels <- read.csv("/home/lucia/phd_work/shareTask/data/clpsych19_training_data/crowd_train.csv")
 
 FreqFeaS <- FreqFea[, c(2,7,12:15)]
@@ -34,13 +34,13 @@ freq <- FreqFeaL[3:14]
 
 #get gower distance
 ```{r }
-getGower <- function(data) {
-  g.dist <-  daisy(data, metric="gower", type=list(asymm = c(4, 6:11)))
+getGower <- function(data, binaryCol) {
+  g.dist <-  daisy(data, metric="gower", type=list(asymm = binaryCol))
   print(summary(g.dist))
   return (g.dist)    
 }
 
-g.dist <- getGower(freq)
+g.dist <- getGower(freq, c(4, 6:11))
 
 ```
 
@@ -53,24 +53,17 @@ table(clusters, FreqFeaL$raw_label)
 
 ```
 
-# kmeans
-```{r kmeans}
-clusters <- kmeans(g.dist, 4, algorithm = 'Forgy')
-table(clusters$cluster)
-table(clusters$cluster, FreqFeaL$raw_label)
-```
-
 #mclust
 ```{r mclust}
-getMclust <- function (gowerMatrix){
+getMclust <- function (gowerMatrix, clusterN){
   BIC <- mclustBIC(as.matrix(g.dist))
   plot(BIC)
-  mod1 <- Mclust(as.matrix(g.dist), x = BIC, G= 5)
+  mod1 <- Mclust(as.matrix(g.dist), x = BIC, G= clusterN)
   print(table(FreqFeaL$raw_label, mod1$classification))
   return (mod1$classification)
 }
 
-clusters <- getMclust(g.dist)
+clusters <- getMclust(g.dist, 5)
 ```
 
 # adding sentiment feature 
@@ -93,14 +86,33 @@ write.csv(topicSentMean2, "/home/lucia/phd_work/shareTask/suicideDetection/featu
 
 ```
 
-
+topicSentMean has stronger correlation with labels than topicSentMean2
 ```{r }
-freqSent <- merge(freq, topicSentMean)
+sentimentProfile <- read.csv('/home/lucia/phd_work/shareTask/suicideDetection/features/users_sentiment_profile.csv')
+freqSent <- merge(FreqFeaL, topicSentMean, by = 'user_id')
+freqSent <- merge(freqSent, sentimentProfile, by = 'user_id', all.x=T)
+freqSent$raw_label<-recode(freqSent$raw_label,"'a'=1;'b'=2;'c'=3;'d'=4")
+freqSent$raw_label<- as.numeric(freqSent$raw_label)
+cor(freqSent)
 
 ```
 
+# remove features correlation with labels < 0.10
+```{r}
+
+freqSent2 <- subset(freqSent, select=-c(family_senti, sentiment, SWWordCount))
+freqSentC <- freqSent2[3:15]
+g.dist <- getGower(freqSentC, c(4, 5:10))
+clusters <- getMclust(g.dist, 5)
+cor(clusters, freqSent$raw_label)
+
+#save cluster result in feature
+freqSent$mclust <- clusters
+write.csv(freqSent, '/home/lucia/phd_work/shareTask/suicideDetection/features/FreqSentiMotiTopiFea.csv')
 
 
+
+```
 
 
 
