@@ -1,6 +1,6 @@
 from sklearn.feature_extraction.text import CountVectorizer
 import pandas as pd
-from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.feature_extraction.text import TfidfVectorizer
 from nltk.stem.porter import *
 from nltk.corpus import stopwords
 import re
@@ -148,20 +148,37 @@ def preprocess(sent):
     return ' '.join(new_words)
     
 print('step 0')
-path = '/afs/inf.ed.ac.uk/user/s16/s1690903/share/shareTask'
+#path = '/afs/inf.ed.ac.uk/user/s16/s1690903/share/shareTask'
+path = '/Users/lucia/phd_work/Clpsy/'
 
-allData = pd.read_csv(path + '/data/clpsych19_training_data/shared_task_posts.csv')
+allData = pd.read_csv(path + '/data/clpsych19_training_data/Btrain_NoNoise_SW.csv')
 #sample.to_csv('/home/lucia/phd_work/shareTask/data/clpsych19_training_data/sample.csv')
 
-SW = allData.loc[allData['subreddit'] == 'SuicideWatch']
+SW= allData.loc[allData['subreddit'] == 'SuicideWatch']
+
+# SW = SW_raw.groupby(['user_id'])['post_body'].transform(lambda x: ','.join(x) if type(x) is str else str(x)).reset_index()
+# SW['user_id'] = SW_raw['user_id']
+# SW = SW[['user_id','post_body']].drop_duplicates()
+
+
 print('step 1')
 SW['post_body'] = SW['post_body'].apply(lambda x: preprocess(x))
 
+vectorizer = CountVectorizer(max_features=1500, min_df=5, max_df=0.7, stop_words=stopwords.words('english'))  
+X = vectorizer.fit_transform(SW.post_body.astype('U')).toarray()
 
-vectorizer = CountVectorizer()
+
 print('step 2')
-VecCounts = vectorizer.fit_transform(SW.post_body.astype('U'))
+tfidfconverter = TfidfVectorizer(max_features=1500, min_df=5, max_df=0.7, stop_words=stopwords.words('english'))
+VecCounts = tfidfconverter.fit_transform(X).toarray()
 print(VecCounts.shape)
+
 print('step 3')
 VecCountsDf = pd.DataFrame(VecCounts.toarray())
 VecCountsDf.to_csv(path + 'countVec.csv')
+
+
+
+
+
+
