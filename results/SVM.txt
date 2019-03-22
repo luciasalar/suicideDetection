@@ -1,0 +1,33 @@
+SVM:
+
+all features (no selection, no word embeddings)
+
+              precision    recall  f1-score   support
+
+           1       0.84      0.46      0.59        35
+           2       0.14      0.50      0.21        18
+           3       0.25      0.38      0.30        32
+           4       0.56      0.14      0.23        64
+
+   micro avg       0.31      0.31      0.31       149
+   macro avg       0.45      0.37      0.33       149
+weighted avg       0.51      0.31      0.33       149
+
+
+{'svc__C': 0.1, 'svc__class_weight': 'balanced', 'svc__gamma': 0.01, 'svc__kernel': 'sigmoid'}
+
+
+feature selection (no word embeddings) n_fea = 34
+
+{'svc__C': 0.5, 'svc__class_weight': 'balanced', 'svc__gamma': 0.01, 'svc__kernel': 'sigmoid'}
+              precision    recall  f1-score   support
+
+           1       0.81      0.62      0.70        42
+           2       0.11      0.21      0.15        14
+           3       0.23      0.54      0.32        24
+           4       0.70      0.33      0.45        69
+
+   micro avg       0.44      0.44      0.44       149
+   macro avg       0.46      0.43      0.41       149
+weighted avg       0.60      0.44      0.47       149
+
