@@ -150,6 +150,7 @@ def preprocess(sent):
 print('step 0')
 #path = '/afs/inf.ed.ac.uk/user/s16/s1690903/share/shareTask'
 path = '/Users/lucia/phd_work/Clpsy/'
+#path = '/home/lucia/phd_work/shareTask/'
 
 allData = pd.read_csv(path + '/data/clpsych19_training_data/Btrain_NoNoise_SW.csv')
 #sample.to_csv('/home/lucia/phd_work/shareTask/data/clpsych19_training_data/sample.csv')
@@ -164,18 +165,17 @@ SW= allData.loc[allData['subreddit'] == 'SuicideWatch']
 print('step 1')
 SW['post_body'] = SW['post_body'].apply(lambda x: preprocess(x))
 
-vectorizer = CountVectorizer(max_features=1500, min_df=5, max_df=0.7, stop_words=stopwords.words('english'))  
-X = vectorizer.fit_transform(SW.post_body.astype('U')).toarray()
 
 
 print('step 2')
 tfidfconverter = TfidfVectorizer(max_features=1500, min_df=5, max_df=0.7, stop_words=stopwords.words('english'))
-VecCounts = tfidfconverter.fit_transform(X).toarray()
-print(VecCounts.shape)
+VecCounts = tfidfconverter.fit_transform(SW.post_body).toarray()
+print(tfidfconverter.get_feature_names())
 
 print('step 3')
-VecCountsDf = pd.DataFrame(VecCounts.toarray())
-VecCountsDf.to_csv(path + 'countVec.csv')
+VecCountsDf = pd.DataFrame(VecCounts)
+VecCountsDf.columns = tfidfconverter.get_feature_names()
+VecCountsDf.to_csv(path + 'countVec2.csv')
 
 
 
