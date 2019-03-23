@@ -25,6 +25,8 @@ from sklearn.feature_selection import SelectFromModel
 from sklearn.ensemble import ExtraTreesClassifier
 import matplotlib.pyplot as plt
 
+from sklearn.ensemble import RandomForestClassifier
+
 def SGDclassifier(X,y):
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.30, random_state=30)
     smote_enn = SMOTEENN(random_state=42)
@@ -51,12 +53,13 @@ def SGDclassifier(X,y):
     print(classification_report(y_true, y_pred))
     print(confusion_matrix(y_true, y_pred))
 
-
+#extra tree to show important features
 def ImportantFea(X, y):
-
+	X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.30, random_state=35)
+	
 	model = ExtraTreesClassifier(random_state = 0)
-	model.fit(X, y)
-	print(model.feature_importances_)
+	model.fit(X_train, y_train)
+	#print(model.feature_importances_)
 
 	print("Feature ranking:")
 
@@ -76,6 +79,46 @@ def ImportantFea(X, y):
 	fea_df.columns = ['importance','features']
 	fea_df.to_csv(path + 'topFea.csv')
 	return fea_df
+
+#RF to show important features
+def RFClassifier(X,y):
+	X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.30, random_state=35)
+	smote_enn = SMOTEENN(random_state=42)
+	rf = make_pipeline(StandardScaler(), RandomForestClassifier(random_state=20))
+	cv = StratifiedKFold(n_splits=5, random_state = 0)
+
+	parameters = [{'randomforestclassifier__max_features':['auto','sqrt','log2'], 'randomforestclassifier__class_weight':['balanced'], 
+	             'randomforestclassifier__max_leaf_nodes':[10,50,100], 'randomforestclassifier__max_depth':[2,5,10,20], 'randomforestclassifier__n_estimators' : [50,100,200,300,400]}]
+	             
+	grid_search_item = GridSearchCV(rf,
+	                            param_grid = parameters,
+	                             scoring = 'accuracy',
+	                             cv = cv,
+	                             n_jobs = -1)
+
+	grid_search = grid_search_item.fit(X_train, y_train)
+
+	print('Best scores and best parameters')
+	print(grid_search.best_score_)
+	print(grid_search.best_params_)
+
+	y_true, y_pred = y_test, grid_search.predict(X_test)
+	print(classification_report(y_true, y_pred))
+
+	importance = grid_search.best_estimator_.steps[2][1].feature_importances_
+
+	feat_importances = pd.Series(importance, index=X.columns)
+	feat_importances.nlargest(20).plot(kind='barh')
+	plt.show()
+
+	fea_df = pd.DataFrame(feat_importances)
+	fea_df['features'] = fea_df.index
+	fea_df.columns = ['importance','features']
+	fea_df.to_csv(path + 'topFea.csv')
+	return fea_df
+
+
+
 
 def selectFea(FeaImportant, Nfea):
     sortFea = FeaImportant.sort_values(by=['importance'],ascending=False)
@@ -116,8 +159,8 @@ def GetLIWC(file:str):
 	return liwcUser
 
 
-path = '/Users/lucia/phd_work/Clpsy/'
-#path = '/home/lucia/phd_work/shareTask/'
+#path = '/Users/lucia/phd_work/Clpsy/'
+path = '/home/lucia/phd_work/shareTask/'
 features = pd.read_csv(path + 'suicideDetection/features/FreqSentiMotiTopiFea.csv')
 
 #merge features
@@ -151,18 +194,16 @@ allfea = pd.merge(allfea, countVec2, on = 'user_id', how = 'right')
 y = allfea.raw_label
 allfea2 = allfea.iloc[:, 1::]
 allfea2 = allfea2.drop(['raw_label'],axis = 1)
-feaImp = ImportantFea(allfea2, y)
-#select top N features 
-selectFea = selectFea(feaImp,200)
+# feaImp = ImportantFea(allfea2, y)
+# #select top N features 
+# selectFea = selectFea(feaImp,200)
 
-selectedFea = allfea2.loc[:, allfea2.columns.isin(selectFea)]
-selectedFea['user_id'] = allfea2.user_id
+# selectedFea = allfea2.loc[:, allfea2.columns.isin(selectFea)]
+# selectedFea['user_id'] = allfea2.user_id
 
 #SVMclassifier(selectedFea,y)
 
-print (liwcUser2.head(5))
-
-
+RFClassifier(allfea2,y)
 #allfea.to_csv(path + 'allFea.csv')
 
 
