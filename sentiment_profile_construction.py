@@ -9,7 +9,7 @@ import os
 
 
 def prepare_file_sentiments(users_ids,dic_values) :
-    new_CSV_file="C:/Users/Abeer/Dropbox/clpsych_workshop/Sentiment_files/posts_sentiment_values.csv"
+    new_CSV_file="C:/Users/Abeer/Dropbox/clpsych_workshop/Sentiment_files/posts_sentiment_values_test.csv"
     
     file_new= open(new_CSV_file,'w')
     new_test_df = pd.read_csv(new_CSV_file, sep=',',encoding='latin1',names=["user_id","sentiment"])    
@@ -59,10 +59,10 @@ if __name__=='__main__':
     training_crowd_data = pd.read_csv(Crowd_users, sep=',', encoding='latin1', low_memory=False) 
     users_ids=training_crowd_data["user_id"]    
     #list of post of task B as provided by the organizers (no SW posts)
-    post_taskB= "C:/Users/Abeer/Dropbox/clpsych_workshop/Training_Testing/clpsych19_training_data/clpsych19_training_data/task_B_train.posts.csv"
+    post_taskB= "C:/Users/Abeer/Dropbox/clpsych_workshop/Training_Testing/clpsych19_training_data/clpsych19_testing_data/task_B_test.posts.csv"
     Task_B_posts=pd.read_csv(post_taskB, sep=',', encoding='latin1', low_memory=False) 
     users_ids=Task_B_posts["user_id"]
-    userfile=pd.read_csv("C:/Users/Abeer/Dropbox/clpsych_workshop/Training_Testing/clpsych19_training_data/clpsych19_training_data/shared_task_posts.csv", sep=',', encoding='latin1', low_memory=False)            
+    userfile=pd.read_csv("C:/Users/Abeer/Dropbox/clpsych_workshop/Training_Testing/clpsych19_training_data/clpsych19_testing_data/shared_task_posts_test.csv", sep=',', encoding='latin1', low_memory=False)            
     postslist=userfile    
     Matrix_values=[]
     users_values=[]
@@ -71,10 +71,10 @@ if __name__=='__main__':
     
     #----------------------user id------------------
     coulm_id=[]
-    users_ids_file='C:/Users/Abeer/Dropbox/clpsych_workshop/Sentiment_files/'
+    users_ids_file='C:/Users/Abeer/Dropbox/clpsych_workshop/Sentiment_files_test/'
     for filename in os.listdir(users_ids_file):
      if filename.endswith('.csv'):
-        userID= filename.replace('posts_sentiment_','')
+        userID= filename.replace('posts_sentiment_test','')
         userID=userID.replace('.csv','')
         userID=userID.replace('\n',"")
         coulm_id.append(userID)
@@ -86,7 +86,7 @@ if __name__=='__main__':
     users_ids=list(set(users_ids))
     for main_user in users_ids:
         sentistring_main=""
-        new_CSV_file="C:/Users/Abeer/Dropbox/clpsych_workshop/Sentiment_files/posts_sentiment_"+str(main_user)+".csv"
+        new_CSV_file="C:/Users/Abeer/Dropbox/clpsych_workshop/Sentiment_files_test/posts_sentiment_test"+str(main_user)+".csv"
         file_new= open(new_CSV_file,'r')
         new_test_df = pd.read_csv(new_CSV_file, sep=',',encoding='latin1',names=["post_id","sentiment"])            
         sentimentvalues=new_test_df['sentiment']
@@ -95,7 +95,7 @@ if __name__=='__main__':
         edit_score=[]
         for user_column in coulm_id:
             sentistring_2=""
-            new_CSV_file="C:/Users/Abeer/Dropbox/clpsych_workshop/Sentiment_files/posts_sentiment_"+str(user_column)+".csv"
+            new_CSV_file="C:/Users/Abeer/Dropbox/clpsych_workshop/Sentiment_files_test/posts_sentiment_test"+str(user_column)+".csv"
             file_new= open(new_CSV_file,'r')
             new_test_df = pd.read_csv(new_CSV_file, sep=',',encoding='latin1',names=["post_id","sentiment"])    
             

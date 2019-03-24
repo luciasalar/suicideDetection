@@ -35,7 +35,7 @@ def prepare_file_features(list_senti,user,postslist):
     #="C:/Users/Abeer/Dropbox/clpsych_workshop/data_sample_clpsych19/user"+str(users_ids[i])+".posts.csv"
     #original_posts_df = pd.read_csv(userfile, sep=',',encoding='latin1')    
     
-    new_CSV_file="C:/Users/Abeer/Dropbox/clpsych_workshop/Sentiment_files/posts_sentiment_"+str(user)+".csv"
+    new_CSV_file="C:/Users/Abeer/Dropbox/clpsych_workshop/Sentiment_files_test/posts_sentiment_test"+str(user)+".csv"
     file_new= open(new_CSV_file,'w')
     new_test_df = pd.read_csv(new_CSV_file, sep=',',encoding='latin1',names=["post_id","sentiment"])    
     #convert timestamp to time
@@ -88,23 +88,23 @@ if __name__ == '__main__':
         users_ids=training_crowd_data["user_id"]
         
         #list of post of task B as provided by the organizers (no SW posts)
-        post_taskB= "C:/Users/Abeer/Dropbox/clpsych_workshop/Training_Testing/clpsych19_training_data/clpsych19_training_data/task_B_train.posts.csv"
+        post_taskB= "C:/Users/Abeer/Dropbox/clpsych_workshop/Training_Testing/clpsych19_training_data/clpsych19_testing_data/task_B_test.posts.csv"
         Task_B_posts=pd.read_csv(post_taskB, sep=',', encoding='latin1', low_memory=False) 
         
         users_ids=Task_B_posts["user_id"]
-        userfile=pd.read_csv("C:/Users/Abeer/Dropbox/clpsych_workshop/Training_Testing/clpsych19_training_data/clpsych19_training_data/shared_task_posts.csv", sep=',', encoding='latin1', low_memory=False)        
+        userfile=pd.read_csv("C:/Users/Abeer/Dropbox/clpsych_workshop/Training_Testing/clpsych19_training_data/clpsych19_testing_data/shared_task_posts_test.csv", sep=',', encoding='latin1', low_memory=False)        
         #postslist=userfile['post_id']
         postslist=userfile
         
         
         #----------------------user id------------------
         original_id=[]
-        users_ids_file='C:/Users/Abeer/Dropbox/clpsych_workshop/Sentiment_files/'
+        users_ids_file='C:/Users/Abeer/Dropbox/clpsych_workshop/Sentiment_files_test/'
         for filename in os.listdir(users_ids_file):
 #for entry in it:
          if filename.endswith('.csv'):
             #userID= filename.partition('posts_sentiment_')[1]
-            userID= filename.replace('posts_sentiment_','')
+            userID= filename.replace('posts_sentiment_test','')
             userID=userID.replace('.csv','')
             print(userID)
             

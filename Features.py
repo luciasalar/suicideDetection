@@ -142,7 +142,7 @@ def prepare_file_features(Features,file):
     file_new.close()
 
 def Features_constructor_sentiment_only(training_file,Testing_file):
-    new_CSV_file="C:/Users/Abeer/Dropbox/clpsych_workshop/Training_features_sentiment.csv"
+    new_CSV_file="C:/Users/Abeer/Dropbox/clpsych_workshop/Testing_features_sentiment.csv"
     file_new= open(new_CSV_file,'w')
     new_test_df = pd.read_csv(new_CSV_file, sep=',',encoding='latin1',names=["user_id","sentiment_score", "raw_label"])
     
@@ -171,7 +171,7 @@ def Features_constructor_sentiment_only(training_file,Testing_file):
                    
         index=index+1
         
-    new_test_df.to_csv("C:/Users/Abeer/Dropbox/clpsych_workshop/Training_features_sentiment.csv", index=False,sep=',') 
+    new_test_df.to_csv("C:/Users/Abeer/Dropbox/clpsych_workshop/Testing_features_sentiment.csv", index=False,sep=',') 
     file_new.close()
     
 
