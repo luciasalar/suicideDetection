@@ -218,15 +218,15 @@ def prepare_file_output(y_values,test_df):
     
     new_CSV_file="C:/Users/Abeer/Dropbox/PHD/models/resultfile.csv"
     file_new= open(new_CSV_file,'w')
-    new_test_df = pd.read_csv(new_CSV_file, sep=',',encoding='latin1',names=["UserID", "raw_label"])
+    new_test_df = pd.read_csv(new_CSV_file, sep=',',encoding='latin1',names=["user_id", "raw_label"])
     
     index=0
     for y in y_values:
         
-        User_ID= test_df.at[index,'UserID']
+        User_ID= test_df.at[index,'user_id']
         
         
-        new_test_df.loc[index, 'UserID'] = str(User_ID)
+        new_test_df.loc[index, 'user_id'] = str(User_ID)
         new_test_df.loc[index, 'raw_label'] = str(y)
                    
         index=index+1
