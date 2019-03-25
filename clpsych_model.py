@@ -115,11 +115,11 @@ class ItemSelector(BaseEstimator, TransformerMixin):
         #print(data_dict[self.key])
         for t in data_dict[self.key]:
             #print(t)
-            return data_dict[self.key]
+            return data_dict[self.key].values.reshape(-1,1)
 
 #-------------------------------------------------
 #Intiate the model and build the features vectors
-def start(target, training_file,testing_file):      
+def start(training_file,testing_file):      
     training_data = pd.read_csv(training_file, sep=',', encoding='latin1', low_memory=False)
     
    
@@ -138,23 +138,30 @@ def start(target, training_file,testing_file):
     
     #-----------training feature-----------------------
     my_stopword_list= text.ENGLISH_STOP_WORDS
-    Y_train = np.asarray([riskLevel for riskLevel in training_data['riskLevel']]) 
-    Y_eval = np.asarray([riskLevel for riskLevel in dev_data['riskLevel']])
-    my_stopword_list
+    #user_id	postingFrequency	postingInterval	generalMoreFreq	generalWordCount	healthPostingFrequency	healthPostingInterval	healthMoreFreq	healthWordCount	mentionMethods	SWFrequency	SWPostingInterval	SWFreq	SWWordCount	fin_body	drug_body	mental_body	rela_body	suicide_body	hopeless_body	motivations	family_senti	partner_senti	self_senti	mclust	sentiment
+
+    
+    Y_train = np.asarray([riskLevel for riskLevel in training_data['raw_label']]) 
+   # Y_eval = np.asarray([riskLevel for riskLevel in dev_data['riskLevel']])
+    print(len(Y_train)) 
+    #my_stopword_list
     # build the feature matrices
     
-    main_post= Pipeline([
-                    ('selector', ItemSelector(key='main_post')),
-                    ('tfidf', CountVectorizer(analyzer='word',binary=True,ngram_range=(1,1))),
-                ])
-    
+#    main_post= Pipeline([
+#                    ('selector', ItemSelector(key='postingFrequency')),
+#                    ('tfidf', CountVectorizer(analyzer='word',binary=True,ngram_range=(1,1))),
+#                ])
+#    
+
+ #user_id	postingFrequency	postingInterval	generalMoreFreq	generalWordCount	healthPostingFrequency	healthPostingInterval	healthMoreFreq	healthWordCount	mentionMethods	SWFrequency	SWPostingInterval	SWFreq	SWWordCount	fin_body	drug_body	mental_body	rela_body	suicide_body	hopeless_body	motivations	family_senti	partner_senti	self_senti	mclust	sentiment
    
     
     ppl = Pipeline([
       
         
          ('feats', FeatureUnion([
-                 ('main_post',main_post)
+                ('selector', ItemSelector(key='postingFrequency')),
+                ('selector_interavl', ItemSelector(key='postingInterval'))
       #('Sentiment', SentimentExtractor())
    
     
@@ -171,7 +178,11 @@ def start(target, training_file,testing_file):
        ,('clf', SVC(kernel='linear',class_weight='balanced') ) # baseline classifier with cross fold 5 
     ])    
     
-        
+#file with features:
+   # testing C:/Users/Abeer/Documents/GitHub/suicideDetection/TestFeatures/FreqSentiMotiTopiFea.csv
+        #C:/Users/Abeer/Documents/GitHub/suicideDetection/features/FreqSentiMotiTopiFea.csv    
+
+    
     #different parameter to explore with:
     #parameters = {'clf__C':[5]} 
     #{'kernel': ['rbf'], 'gamma': [1e-3, 1e-4],'C': [1, 10, 100, 1000]},
@@ -192,43 +203,45 @@ def start(target, training_file,testing_file):
     #scores = cross_validation.cross_val_score(ppl, iris.data, iris.target, cv=5)
 
     y_test = model.predict(dev_data)
-    print(classification_report(Y_eval, y_test))    
+   # print(classification_report(Y_eval, y_test))    
     
     
-    prepare_file_output(y_test,target,dev_data)
+    prepare_file_output(y_test,dev_data)
     
     
    
 
 
-def prepare_file_output(y_values,target,test_df,index):
+def prepare_file_output(y_values,test_df):
     print("prepare resulting file output")
    
     
     new_CSV_file="C:/Users/Abeer/Dropbox/PHD/models/resultfile.csv"
     file_new= open(new_CSV_file,'w')
-    new_test_df = pd.read_csv(new_CSV_file, sep=',',encoding='latin1',names=["UserID", "RiskLevel"])
+    new_test_df = pd.read_csv(new_CSV_file, sep=',',encoding='latin1',names=["UserID", "raw_label"])
     
-   
+    index=0
     for y in y_values:
         
         User_ID= test_df.at[index,'UserID']
         
         
         new_test_df.loc[index, 'UserID'] = str(User_ID)
-        new_test_df.loc[index, 'RiskLevel'] = str(y)
+        new_test_df.loc[index, 'raw_label'] = str(y)
                    
         index=index+1
         
-    new_test_df.to_csv("C:/Users/Abeer/Dropbox/PHD/models/resultfile.csv", index=False,sep=',') 
+    new_test_df.to_csv("C:/Users/Abeer/Dropbox/PHD/models/clpsych_resultfile.csv", index=False,sep=',') 
     file_new.close()
 
 
 
 
 if __name__ == '__main__':
-    
-   training_file="C:/Users/Abeer/Dropbox/clpsych_workshop/Training_Testing/training_clpsych.csv"
-   Testing_file="C:/Users/Abeer/Dropbox/clpsych_workshop/Training_Testing/training_clpsych.csv"
-   
+    # testing C:/Users/Abeer/Documents/GitHub/suicideDetection/TestFeatures/FreqSentiMotiTopiFea.csv
+        #C:/Users/Abeer/Documents/GitHub/suicideDetection/features/FreqSentiMotiTopiFea.csv    
+
+   training_file="C:/Users/Abeer/Documents/GitHub/suicideDetection/features/FreqSentiMotiTopiFea.csv"
+   Testing_file="C:/Users/Abeer/Documents/GitHub/suicideDetection/TestFeatures/FreqSentiMotiTopiFea.csv"
+       
    start(training_file,Testing_file)
