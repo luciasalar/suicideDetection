@@ -10,6 +10,8 @@ knitr::opts_chunk$set(echo = TRUE)
 library(cluster)  # we'll use these packages
 library(fpc)
 library(mclust)
+library(tidyverse)
+library(fastDummies)
 ```
 
 
@@ -18,9 +20,9 @@ library(mclust)
 ```{r }
 #setwd('/home/lucia/phd_work/shareTask/')
 #setwd('/Users/lucia/phd_work/Clpsy')
-FreqFea <- read.csv("/home/lucia/phd_work/shareTask/suicideDetection/features/FreqFea.csv")
-moti <-  read.csv("/home/lucia/phd_work/shareTask/suicideDetection/features/motivations2.csv")
-labels <- read.csv("/home/lucia/phd_work/shareTask/data/clpsych19_training_data/crowd_train.csv")
+FreqFea <- read.csv("/Users/lucia/phd_work/Clpsy/suicideDetection/features/FreqFea.csv")
+moti <-  read.csv("/Users/lucia/phd_work/Clpsy/suicideDetection/features/motivations2.csv")
+labels <- read.csv("/Users/lucia/phd_work/Clpsy/data/clpsych19_training_data/crowd_train.csv")
 
 FreqFeaS <- FreqFea[, c(2,7,12:15)]
 motiS <- moti[, c(2:9)]
@@ -40,37 +42,28 @@ getGower <- function(data, binaryCol) {
   return (g.dist)    
 }
 
-g.dist <- getGower(freq, c(4, 6:11))
+
 
 ```
 
-```{r }
-hc.c = hclust(g.dist, method="complete")
-clusters <- cutree(hc.c, k=4)
-table(clusters)
-#plot(hc.c)
-table(clusters, FreqFeaL$raw_label)
-
-```
 
 #mclust
 ```{r mclust}
 getMclust <- function (gowerMatrix, clusterN){
-  BIC <- mclustBIC(as.matrix(g.dist))
+  BIC <- mclustBIC(as.matrix(gowerMatrix))
   plot(BIC)
-  mod1 <- Mclust(as.matrix(g.dist), x = BIC, G= clusterN)
-  print(table(FreqFeaL$raw_label, mod1$classification))
+  mod1 <- Mclust(as.matrix(gowerMatrix), x = BIC, G= clusterN)
+  #print(table(FreqFeaL$raw_label, mod1$classification))
   return (mod1$classification)
 }
 
-clusters <- getMclust(g.dist, 5)
 ```
 
 # adding sentiment feature 
 ```{r adding sentiment feature}
-getUsertopicSent <- function(Topicfile){
+getUsertopicSent <- function(Topicfile, useridFile){
   topicSent <- read.csv(Topicfile)
-  getid <- read.csv("/home/lucia/phd_work/shareTask/data/clpsych19_training_data/BtrainNoNoiseSWStress.csv")
+  getid <- read.csv(useridFile)
   getid <- getid[,c('user_id', 'post_id')]
   topicSent <- merge(topicSent, getid, by = 'post_id', all.x = T)
   topicSentMean <- aggregate(topicSent[, 3:5], list(topicSent$user_id), mean)
@@ -78,20 +71,22 @@ getUsertopicSent <- function(Topicfile){
   return (topicSentMean)
 }
 
-topicSentMean <- getUsertopicSent("/home/lucia/phd_work/shareTask/suicideDetection/features/topicSentiment.csv")
-write.csv(topicSentMean, "/home/lucia/phd_work/shareTask/suicideDetection/features/UsertopicSentiment.csv")
+useridFile <- "/Users/lucia/phd_work/Clpsy/data/clpsych19_training_data/BtrainNoNoiseSWStress.csv"
+topicSentMean <- getUsertopicSent("/Users/lucia/phd_work/Clpsy/suicideDetection/features/topicSentiment.csv", useridFile)
+#write.csv(topicSentMean, "/Users/lucia/phd_work/Clpsy/suicideDetection/features/UsertopicSentiment.csv")
 
-topicSentMean2 <- getUsertopicSent("/home/lucia/phd_work/shareTask/suicideDetection/features/topicSentiment2.csv")
-write.csv(topicSentMean2, "/home/lucia/phd_work/shareTask/suicideDetection/features/UsertopicSentiment2.csv")
+topicSentMean2 <- getUsertopicSent("/Users/lucia/phd_work/Clpsy/suicideDetection/features/topicSentiment2.csv", useridFile)
+write.csv(topicSentMean2, "/Users/lucia/phd_work/Clpsy/suicideDetection/features/UsertopicSentiment2.csv")
 
 ```
 
-topicSentMean has stronger correlation with labels than topicSentMean2
+topicSentMean has stronger correlation with labels than topicSentMean2 but topicSentMean helps clustering better results
 ```{r }
-sentimentProfile <- read.csv('/home/lucia/phd_work/shareTask/suicideDetection/features/users_sentiment_profile.csv')
+sentimentProfile <- read.csv('/Users/lucia/phd_work/Clpsy/suicideDetection/features/users_sentiment_profile.csv')
 freqSent <- merge(FreqFeaL, topicSentMean, by = 'user_id')
 freqSent <- merge(freqSent, sentimentProfile, by = 'user_id', all.x=T)
-freqSent$raw_label<-recode(freqSent$raw_label,"'a'=1;'b'=2;'c'=3;'d'=4")
+freqSent$raw_label<-dplyr::recode(freqSent$raw_label,'a'=1,'b'=2,'c'=3,'d'=4)
+freqSent <- fastDummies::dummy_cols(freqSent, select_columns = "raw_label")
 freqSent$raw_label<- as.numeric(freqSent$raw_label)
 cor(freqSent)
 
@@ -106,24 +101,69 @@ g.dist <- getGower(freqSentC, c(4, 5:10))
 clusters <- getMclust(g.dist, 5)
 cor(clusters, freqSent$raw_label)
 
-#save cluster result in feature
-freqSent$mclust <- clusters
-write.csv(freqSent, '/home/lucia/phd_work/shareTask/suicideDetection/features/FreqSentiMotiTopiFea.csv')
+#save cluster result in feature and merge features for training set
+FreqFeaT<- merge(FreqFea, moti, by ='user_id', all.y = T)
+FreqFeaT <-  FreqFeaT[,c(-2,-16)]  
+FreqFeaT <- merge(FreqFeaT, topicSentMean, by = 'user_id')
+FreqFeaT <- merge(FreqFeaT, labels, by = 'user_id')
+FreqFeaT <- merge(FreqFeaT, sentimentProfile, by = 'user_id', all.x=T)
+
+FreqFeaT$mclust <- clusters
+write.csv(FreqFeaT, '/Users/lucia/phd_work/Clpsy/suicideDetection/features/FreqSentiMotiTopiFea.csv')
 
 
 
 ```
 
 
+#merge test set 
+
+get sentiment from test data
+```{r }
+useridFile <- "/Users/lucia/phd_work/Clpsy/data/clpsych19_training_data/testSWstressed.csv"
+topicSentMean2T <- getUsertopicSent("/Users/lucia/phd_work/Clpsy/suicideDetection/TestFeatures/topicSentiment2.csv", useridFile)
+write.csv(topicSentMean2T, "/Users/lucia/phd_work/Clpsy/suicideDetection/TestFeatures/UsertopicSentiment2.csv")
+
+topicSentMeanT <- getUsertopicSent("/Users/lucia/phd_work/Clpsy/suicideDetection/TestFeatures/topicSentiment.csv", useridFile)
+write.csv(topicSentMean2T, "/Users/lucia/phd_work/Clpsy/suicideDetection/TestFeatures/UsertopicSentiment.csv")
+```
+
+cluster with frequency, motivation and topic sentiment feature
+```{r }
+
+FreqFeaTe <- read.csv("/Users/lucia/phd_work/Clpsy/suicideDetection/TestFeatures/FreqFea.csv")
+motiTe <-  read.csv("/Users/lucia/phd_work/Clpsy/suicideDetection/TestFeatures/motivations2.csv")
+topicSenti <-  read.csv("/Users/lucia/phd_work/Clpsy/suicideDetection/TestFeatures/UsertopicSentiment.csv")
+sentiProfile <-  read.csv("/Users/lucia/phd_work/Clpsy/suicideDetection/TestFeatures/users_sentiment_profile.csv")
+FreqFeaTe2 <- FreqFeaTe[, c(2,7,12:15)]
+motiSTe <- motiTe[, c(2:9)]
+
+#FreqFeaL <- merge(labels, FreqFeaS, by ='user_id', all.y = T)
+FreqFeaLT<- merge(FreqFeaTe2, motiSTe, by ='user_id', all.y = T)
+FreqFeaLT <- merge(FreqFeaLT, topicSenti, by ='user_id', all.y = T)
+#FreqFeaLT <- merge(FreqFeaSTe, sentiProfile)
+freqT <- subset(FreqFeaLT, select=-c(family_senti, SWWordCount, X))
+freqT <- freqT[2:14]
+
+g.distT <- getGower(freqT, c(4, 5:10))
+clustersT <- getMclust(g.distT, 5)
+```
 
 
+merge all the files
+```{r }
+sentimentProfile <- read.csv('/Users/lucia/phd_work/Clpsy/suicideDetection/TestFeatures/users_sentiment_profile.csv')
+FreqFeaTe2<- merge(FreqFeaTe, motiTe, by ='user_id', all.y = T)
+FreqFeaTe2 <-  FreqFeaTe2[,c(-2,-16)]  
+FreqFeaTe2 <- merge(FreqFeaTe2, topicSenti, by = 'user_id')
+FreqFeaTe2$mclust <- clustersT
+FreqFeaTe2$X <- NULL
+FreqFeaTe2 <- merge(FreqFeaTe2, sentimentProfile, by = 'user_id', all.x=T)
+
+write_csv(FreqFeaTe2, '/Users/lucia/phd_work/Clpsy/suicideDetection/TestFeatures/FreqSentiMotiTopiFea.csv')
 
 
-
-
-
-
-
+```
 
 
 
