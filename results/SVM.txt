@@ -31,3 +31,23 @@ feature selection (no word embeddings) n_fea = 34
    macro avg       0.46      0.43      0.41       149
 weighted avg       0.60      0.44      0.47       149
 
+feature select top 400, SVM
+Best scores and best parameters
+0.5446685878962536
+{'svc__C': 2.0, 'svc__class_weight': 'balanced', 'svc__gamma': 0.01, 'svc__kernel': 'rbf'}
+              precision    recall  f1-score   support
+
+           a       0.65      0.74      0.69        35
+           b       0.67      0.22      0.33        18
+           c       0.25      0.28      0.26        32
+           d       0.60      0.62      0.61        64
+
+   micro avg       0.53      0.53      0.53       149
+   macro avg       0.54      0.47      0.48       149
+weighted avg       0.54      0.53      0.52       149
+
+[[26  0  6  3]
+ [ 6  4  3  5]
+ [ 3  1  9 19]
+ [ 5  1 18 40]]
+
