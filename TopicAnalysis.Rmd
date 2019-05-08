@@ -1,0 +1,273 @@
+---
+title: "TopicAnalysis"
+author: "lushi"
+date: "07/05/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+require(data.table)
+require(fastDummies)
+```
+
+## R Markdown
+
+This script compare the LIWC score in each level
+
+```{r, include FALSE}
+path = '/Users/lucia/phd_work/Clpsy'
+setwd(path)
+#labels <- read.csv("./data/clpsych19_training_data/crowd_train.csv")
+post <- read.csv("./data/clpsych19_training_data/Btrain.csv")
+SW <- read.csv("./data/clpsych19_training_data/Btrain_NoNoise_SW_LIWC.csv")
+AllLiwc <- read.csv("./data/clpsych19_training_data/BtrainLiwc.csv")
+# for class A, we need to filter out posts that talk about self 
+allLabel <- read.csv("./data/clpsych19_training_data/crowd_train.csv")
+
+```
+
+```{r}
+setwd(path)
+post <- read.csv("./data/clpsych19_training_data/task_B_train.posts.csv")
+```
+
+now we compare the LIWC in SW posts
+```{r pressure, echo=FALSE}
+
+#AllLiwc$raw_label[is.na(AllLiwc$raw_label)]  <- 0
+
+SW  <-SW[, c(7:100)]
+
+
+
+getCompareStats <- function(results){
+  group1  <- results[which(results$raw_label == 'a'), ] 
+  group2  <- results[which(results$raw_label == 'b'), ] 
+  group3  <- results[which(results$raw_label == 'c'), ] 
+  group4  <- results[which(results$raw_label == 'd'), ] 
+  #group5  <- results[which(results$raw_label == ''), ] 
+  
+  
+  getSummary <- function(group){
+    g1 <- psych::describe(group, quant=c(.25,.75))
+    setDT(g1, keep.rownames = TRUE)[]
+    gc1 <- g1[,c('rn', 'median', 'Q0.25', 'Q0.75')]
+  
+  return (gc1)
+  }
+  
+  gc1 <- getSummary(group1)
+  gc2 <- getSummary(group2)
+  gc3 <- getSummary(group3)
+  gc4 <- getSummary(group4)
+  #gc5 <- getSummary(group5)
+  
+  
+  LatextTable <- function(StartCol, endCol){
+    summaryRe <- cbind(gc1[,c(1,2)], gc2[,StartCol:endCol])
+    summaryRe <- cbind(summaryRe, gc3[,StartCol:endCol])
+    summaryRe <- cbind(summaryRe, gc4[,StartCol:endCol])
+   # summaryRe <- cbind(summaryRe, gc5[,StartCol:endCol])
+    summaryRe2 <- format(summaryRe, digits = 2)
+    
+  }
+  
+  summaryResult <- LatextTable(2,2)
+  return (summaryResult)
+}
+
+
+summaryResult <- getCompareStats(SW)
+
+```
+
+#LIWC comparison in SW posts 
+```{r}
+stargazer(summaryResult, type = 'text')
+
+```
+
+now we look at the top100 topics in all the users posts, divide the topics into groups and compute the topic counts 
+```{r, include = FALSE}
+NoSW <- subset(post, post$subreddit != 'SuicideWatch')
+Top100 <- data.frame(table(NoSW$subreddit))
+Top100<- Top100[order(-Top100$Freq),]
+Top100 <- Top100[1:100, ]
+
+#count topic
+groups <- post[,c('user_id','raw_label')]
+#number of people in each group
+groups2 <- groups[!duplicated(groups$user_id),]
+NumP <- data.frame(table(groups2$raw_label))
+
+GetThemeCount <- function(theme, themeName){
+  post$themeCount<- ifelse(post$subreddit == theme , 1, 0)
+  # aggregate theme count on user level
+   Seltheme <- post[post$themeCount == 1,]
+  themes <- data.frame(table(Seltheme$user_id))
+  colnames(themes) <- c('user_id', themeName)
+  groupTheme <- merge(themes, groups, by = 'user_id', all.x = T)
+  themes <- data.frame(table(groupTheme$raw_label))
+  themes$NumPeople <- NumP$Freq
+  themes$Freq <- themes$Freq/NumP$Freq
+  return(themes)
+}
+
+GetThemePost <- function(theme, themeName){
+  post$themeCount<- ifelse(post$subreddit == theme , 1, 0)
+  # aggregate theme count on user level
+  Seltheme <- post[post$themeCount == 1,]
+  return (Seltheme)
+}
+
+
+GetThemeCor<- function(theme, themeName){
+  post$themeCount<- ifelse(post$subreddit == theme , 1, 0)
+  # aggregate theme count on user level
+  Seltheme <- post[post$themeCount == 1,]
+  themes <- data.frame(table(Seltheme$user_id))
+  colnames(themes) <- c('user_id', themeName)
+  groupTheme <- merge(themes, groups, by = 'user_id', all.x = T)
+  groupTheme <- groupTheme[!duplicated(groupTheme$user_id),]
+  groupTheme$raw_label <- as.character(groupTheme$raw_label)
+  groupTheme$raw_label[groupTheme$raw_label==""] <- 0
+  groupTheme$raw_label[groupTheme$raw_label== 'a'] <- 1
+  groupTheme$raw_label[groupTheme$raw_label== 'b'] <- 2
+  groupTheme$raw_label[groupTheme$raw_label== 'c'] <- 3
+  groupTheme$raw_label[groupTheme$raw_label== 'd'] <- 4
+  groupDum <- fastDummies::dummy_cols(groupTheme$raw_label)
+  #groupTheme$raw_label <- as.numeric(as.character(groupTheme$raw_label))
+  corRe <- cor(groupDum[,-1], groupTheme[,2])
+  return(corRe)
+}
+
+funCount <- GetThemeCor(fun, 'fun')
+funCount <- GetThemeCount(fun, 'fun')
+
+l = Top100$Var1
+l <- c("selfharm","Christianity",'gaming')
+
+GetAllCor <- function(x){
+  preCor = NULL
+  for (topic in l){
+    CorRe <- GetThemeCor(topic, 'topic')
+    corDf <- data.frame(CorRe)
+    #CorRe <- cbind(preCor, CorRe)
+    #preCor <- CorRe
+    print(CorRe)
+  #return (data.frame(CorRe))
+  }
+}
+
+allCor <- GetAllCor()
+```
+
+here we compare the LIWC in selected themes, are the redditors of various risk level consistent in their psychological expressions across topics?
+```{r}
+
+
+getCompareStats2 <- function(results){
+    group1  <- results[which(results$raw_label == 'a'), ] 
+    group2  <- results[which(results$raw_label == 'b'), ] 
+    group3  <- results[which(results$raw_label == 'c'), ] 
+    group4  <- results[which(results$raw_label == 'd'), ] 
+    group5  <- results[which(results$raw_label == ''), ] 
+    
+    
+  getSummary <- function(group){
+    g1 <- psych::describe(group, quant=c(.25,.75))
+    g1$mean <- as.numeric(as.character(g1$mean))
+    setDT(g1, keep.rownames = TRUE)[]
+    gc <- g1[,c('rn', 'mean', 'Q0.25', 'Q0.75')]
+    gc$mean<- round(gc$mean, digits = 2)
+  
+    return (gc)
+  }
+  
+  gc1 <- getSummary(group1)
+  gc2 <- getSummary(group2)
+  gc3 <- getSummary(group3)
+  gc4 <- getSummary(group4)
+  gc5 <- getSummary(group5)
+  
+  
+  LatextTable <- function(StartCol, endCol){
+    summaryRe <- cbind(gc1[,c(1,2)], gc2[,StartCol:endCol])
+    summaryRe <- cbind(summaryRe, gc3[,StartCol:endCol])
+    summaryRe <- cbind(summaryRe, gc4[,StartCol:endCol])
+    summaryRe <- cbind(summaryRe, gc5[,StartCol:endCol])
+    #summaryRe2 <- format(summaryRe, digits = 2)
+    
+  }
+  
+  summaryResult <- LatextTable(2,2)
+  return (summaryResult)
+}
+
+getStatTable <- function(theme, themeName){
+  selPost <- GetThemePost(theme, themeName)
+  themePostLIWC <- subset(AllLiwc, (AllLiwc$post_id %in% selPost$post_id))
+  themePostLIWC  <- themePostLIWC[, c(7:100)]
+  summaryThemeRe <- getCompareStats2(themePostLIWC)
+  return(summaryThemeRe)
+}
+
+#the majority of posts in the fun theme are media, therefore, no LIWC scores
+fun <- c('funny', 'aww')
+funRe <- getStatTable(fun, 'fun')
+funCount <- GetThemeCount(fun, 'fun')
+
+#the number of mental health posts is a lot less, thus NA
+mentalH <- c('depression', 'schizophrenia', 'selfharm')
+mentalHRe <- getStatTable(mentalH, 'mentalH')
+mentalHC <- GetThemeCount(mentalH, 'mentalH')
+
+
+
+woman<- c('AskWomen','BabyBumps','TwoXChromosomes')
+womanRe <- getStatTable(woman, 'woman')
+womanC <- GetThemeCor(woman, 'woman')
+
+
+womanC <- GetThemeCount(woman, 'woman')
+
+game <- c('gaming', 'leagueoflegends', 'Fireteams', 'SteamGameSwap','hcfactions','summonerschool','Minecraft', 'pcmasterrace','amiibo','GlobalOffensiveTrade',	'pokemon','DotA2','starcraft','AnimalCrossing','GlobalOffensive','runescape','zelda','hearthstone','buildapc')
+gameRe <- getStatTable(game, 'game')
+gameC <- GetThemeCor(game, 'game')
+
+infoShare <- c('askscience','todayilearned','technology','Android','techsupport','tipofmytongue','IAmA',
+               'casualiama','Permaculture','motorcycles','guns','investing','business','MakeupAddiction',
+               'poker','malefashionadvice','seedstock','breakingmom')
+
+infoShareRe <- getStatTable(infoShare, 'infoShare')
+
+GetThemeCount <- function(theme, themeName){
+  post$themeCount<- ifelse(post$subreddit == theme , 1, 0)
+  # aggregate theme count on user level
+  Seltheme <- post[post$themeCount == 1,]
+  themes <- data.frame(table(Seltheme$user_id))
+  colnames(themes) <- c('user_id', themeName)
+  groupTheme <- merge(themes, groups, by = 'user_id', all.x = T)
+  themes <- data.frame(table(groupTheme$raw_label))
+  themes$NumPeople <- NumP$Freq
+  themes$Freq <- themes$Freq/NumP$Freq
+  return(themes)
+}
+
+infoShareC <- GetThemeCount(infoShare, 'infoShare')
+infoShareCor <- GetThemeCor(infoShare, 'infoShare')
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
