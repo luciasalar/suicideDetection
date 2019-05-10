@@ -8,6 +8,7 @@ output: html_document
 ```{r setup, include=FALSE}
 require(data.table)
 require(fastDummies)
+library(psych)
 ```
 
 ## R Markdown
@@ -15,8 +16,8 @@ require(fastDummies)
 This script compare the LIWC score in each level
 
 ```{r, include FALSE}
-#path = '/Users/lucia/phd_work/Clpsy'
-path = '/home/lucia/phd_work/shareTask/'
+path = '/Users/lucia/phd_work/Clpsy'
+#path = '/home/lucia/phd_work/shareTask/'
 setwd(path)
 #labels <- read.csv("./data/clpsych19_training_data/crowd_train.csv")
 post <- read.csv("./data/clpsych19_training_data/Btrain.csv")
@@ -101,7 +102,7 @@ groups <- post[,c('user_id','raw_label')]
 groups2 <- groups[!duplicated(groups$user_id),]
 NumP <- data.frame(table(groups2$raw_label))
 
-GetThemeCount <- function(theme, themeName){
+GetThemeCount <- function(theme, themeName, bootstrapN){
   post$themeCount<- ifelse(post$subreddit == theme , 1, 0)
   # aggregate theme count on user level
    Seltheme <- post[post$themeCount == 1,]
@@ -120,66 +121,226 @@ GetThemePost <- function(theme, themeName){
   Seltheme <- post[post$themeCount == 1,]
   return (Seltheme)
 }
+```
 
 
-GetThemeCor<- function(theme, themeName){
-  post$themeCount<- ifelse(post$subreddit == theme , 1, 0)
-  # aggregate theme count on user level
-  Seltheme <- post[post$themeCount == 1,]
-  themes <- data.frame(table(Seltheme$user_id))
-  colnames(themes) <- c('user_id', themeName)
-  groupTheme <- merge(themes, groups, by = 'user_id', all.x = T)
-  groupTheme <- groupTheme[!duplicated(groupTheme$user_id),]
-  groupTheme$raw_label <- as.character(groupTheme$raw_label)
-  groupTheme$raw_label[groupTheme$raw_label==""] <- 'NRisk'
-  groupTheme$raw_label[groupTheme$raw_label== 'a'] <- 'LRisk'
-  groupTheme$raw_label[groupTheme$raw_label== 'b'] <- 'MoRisk'
-  groupTheme$raw_label[groupTheme$raw_label== 'c'] <- 'HRisk'
-  groupTheme$raw_label[groupTheme$raw_label== 'd'] <- 'VHRisk'
-  groupDum <- fastDummies::dummy_cols(groupTheme$raw_label)
-  #groupTheme$raw_label <- as.numeric(as.character(groupTheme$raw_label))
-  corRe <- cor(groupDum[,-1], groupTheme[,2])
-  return(corRe)
+```{r, include=FALSE}
+GetTopicCor <- function(theme, themeName, bootstrapN){
+  #generate a df for correlation
+  GetDf<- function(theme, themeName){
+    post$themeCount<- ifelse(post$subreddit == theme, 1, 0)
+    # aggregate theme count on user level
+    Seltheme <- post[post$themeCount == 1,]
+    themes <- data.frame(table(Seltheme$user_id))
+    colnames(themes) <- c('user_id', themeName)
+    groupTheme <- merge(themes, groups, by = 'user_id', all.x = T)
+    groupTheme <- groupTheme[!duplicated(groupTheme$user_id),]
+    groupTheme$raw_label <- as.character(groupTheme$raw_label)
+    groupTheme$raw_label[groupTheme$raw_label==""] <- 'NRisk'
+    groupTheme$raw_label[groupTheme$raw_label== 'a'] <- 'LRisk'
+    groupTheme$raw_label[groupTheme$raw_label== 'b'] <- 'MoRisk'
+    groupTheme$raw_label[groupTheme$raw_label== 'c'] <- 'HRisk'
+    groupTheme$raw_label[groupTheme$raw_label== 'd'] <- 'VHRisk'
+    
+    return(groupTheme)
+  }
+  
+  #convert category to dummy vari then do correlation
+  GetThemeCor <- function(groupTheme){
+    # #permutation (sample the order of the data)
+    # #set.seed(42)
+    groupDum <- fastDummies::dummy_cols(groupTheme$raw_label)
+    groupDumPer <- groupDum[sample(nrow(groupDum)),]
+    corRe <- cor(groupDumPer[,-1], groupTheme[,2])
+    return(corRe)
+  }
+
+  #permutation, times: number of iteration, theme:subreddit, get the most frequent value as result
+  getMedian <- function(RiskLevel){
+    NRisk <- c()
+    for(i in 1:bootstrapN){
+      groupTheme <- GetDf(theme, themeName)
+      CorRe <- GetThemeCor(groupTheme)
+      NRisk[[i]] <- round(CorRe[RiskLevel], digits = 2)
+      mostFreq <- data.frame(sort(table(NRisk),decreasing=TRUE))
+      mostFreq[,1] <- as.numeric(as.character(mostFreq[,1]))
+      result <- mostFreq[1,1]
+    }
+    return (result)
+  }
+  
+  NRisk <- getMedian(1)
+  LRisk <- getMedian(2)
+  VHRisk <- getMedian(3)
+  MoRisk <- getMedian(4)
+  HRisk <- getMedian(5)
+  
+  RiskCor <- data.frame(c(NRisk,LRisk,VHRisk,MoRisk,HRisk))
+  RiskCor$rn <- c('NRisk','LRisk','VHRisk','MoRisk','HRisk')
+  return(RiskCor)
 }
-
 
 #get topic correlation with risk level
 l = Top100$Var1
-GetAllCor <- function(x){
+
+l = c('gaming','aww')
+
+GetAllCor <- function(topics, boostrapN){
   preCor = NULL
   mergeDf = NULL
-  for (topic in l){
+  for (topic in topics){
     if (is.null(preCor) == F){
-      CorRe <- GetThemeCor(topic, 'topic')
-      corDf <- data.frame(CorRe)
-      corDf <- setDT(corDf, keep.rownames = TRUE)[]
-      colnames(corDf) <- c('rn', topic)
-      mergeDf <- merge(preCor, corDf, by ='rn', all= T)
-      
+      CorRe <- GetTopicCor(topic, 'topic', boostrapN)
+      colnames(CorRe) <- c(topic,'rn')
+      mergeDf <- merge(preCor, CorRe, by ='rn', all= T)
       preCor <- mergeDf
     }
     else{
-      CorRe <- GetThemeCor(topic, 'topic')
-      corDf <- data.frame(CorRe)
-      corDf <- setDT(corDf, keep.rownames = TRUE)[]
-      preCor <- corDf
+      CorRe <- GetTopicCor(topic, 'topic', boostrapN)
+      colnames(CorRe) <- c(topic,'rn')
+      preCor <- CorRe
     }
   }
-  return(preCor)
+  return(mergeDf)
+  
 }
 
-allCor <- GetAllCor()
-allCorLat <- t(allCor) 
+system.time(allCor <- GetAllCor(l, 10))
+
+#now we create the latex table
+allCorLat <- data.frame(t(allCor))
 allCorLat <- allCorLat[rowSums(is.na(allCorLat)) != ncol(allCorLat), ]
 allCorLat <- allCorLat[,-6]
 allCorLat[is.na(allCorLat)] <- 0
-allCorLat2 <- dt_l<- lapply(dt, below_ave)
-  round(allCorLat$, digits = 2)
+colnames(allCorLat) = allCorLat[1, ] # the first row will be the header
+allCorLat <- allCorLat[-1, ]
+colnames(allCorLat) <- c("data_HRisk","data_LRisk","data_MoRisk", "data_NRisk",  "data_VHRisk")
 
-stargazer(allCorLat, type = 'latex')
+#convert to Latex table
+ConvertNum <- function(df){
+  for (i in colnames(df)){
+    df[,c(i)] <- as.numeric(as.character(df[,c(i)]))
+  }
+  return (df)
+}
+
+allCorLat2 <- ConvertNum(allCorLat)
+allCorLat2 <- data.frame(sapply(allCorLat2, roundup))
+setDT(allCorLat, keep.rownames = TRUE)[]
+allCorLat2$subreddit<- allCorLat$rn
+
+#stargazer(allCorLat2, type = 'latex',  summary=FALSE, out='/Users/lucia/phd_work/Clpsy/data/clpsych19_training_data/allCorLat2.csv', out.header=FALSE)
+
+library(XLConnect)
+writeWorksheetToFile("/Users/lucia/phd_work/Clpsy/data/clpsych19_training_data/allCorLat2.xlsx", 
+                 data = allCorLat2, 
+                 sheet = "cor", 
+                 header = TRUE,
+                 clearSheets = TRUE)
+
+```
+
+#get 95% confidence interval 
+```{r}
+GetConfi <- function(theme, themeName, bootstrapN){
+  GetDf<- function(theme, themeName){
+    post$themeCount<- ifelse(post$subreddit == theme, 1, 0)
+    # aggregate theme count on user level
+    Seltheme <- post[post$themeCount == 1,]
+    themes <- data.frame(table(Seltheme$user_id))
+    colnames(themes) <- c('user_id', themeName)
+    groupTheme <- merge(themes, groups, by = 'user_id', all.x = T)
+    groupTheme <- groupTheme[!duplicated(groupTheme$user_id),]
+    groupTheme$raw_label <- as.character(groupTheme$raw_label)
+    groupTheme$raw_label[groupTheme$raw_label==""] <- 'NRisk'
+    groupTheme$raw_label[groupTheme$raw_label== 'a'] <- 'LRisk'
+    groupTheme$raw_label[groupTheme$raw_label== 'b'] <- 'MoRisk'
+    groupTheme$raw_label[groupTheme$raw_label== 'c'] <- 'HRisk'
+    groupTheme$raw_label[groupTheme$raw_label== 'd'] <- 'VHRisk'
+    
+    return(groupTheme)
+  }
+  
+  
+  GetThemeCor <- function(groupTheme){
+    # #permutation (sample the order of the data)
+    #set.seed(42)
+    groupDum <- fastDummies::dummy_cols(groupTheme$raw_label)
+    groupDumPer <- groupDum[sample(nrow(groupDum)),]
+    corRe <- cor(groupDumPer[,-1], groupTheme[,2])
+    return(corRe)
+  }
+
+  #permutation, times: number of iteration, theme:subreddit, get the most frequent value as result
+   getLeft <- function(RiskLevel){
+    NRisk <- c()
+    for(i in 1:bootstrapN){
+      groupTheme <- GetDf(theme, themeName)
+      CorRe <- GetThemeCor(groupTheme)
+      NRisk[[i]] <- round(CorRe[RiskLevel], digits = 2)
+      Freq <- data.frame(sort(table(NRisk),decreasing=TRUE))
+      Freq[,1] <- as.numeric(as.character(Freq[,1]))
+      meanR <- mean(as.numeric(as.character(Freq$Freq)))
+      sdR <- sd(as.numeric(as.character(Freq$Freq)))
+      n <- length(Freq$Freq)
+      error <- qt(0.975,df=n-1)*sdR/sqrt(n)
+      left <- round(meanR-error, digits = 0)
+      leftBound <- data.frame(Freq[Freq$Freq == left, ])
+      leftB <- leftBound$NRisk[1]
+      
+    }
+    return (leftB)
+   }
+  #  
+   getRight <- function(RiskLevel){
+    NRisk <- c()
+    for(i in 1:bootstrapN){
+      groupTheme <- GetDf(theme, themeName)
+      CorRe <- GetThemeCor(groupTheme)
+      NRisk[[i]] <- round(CorRe[RiskLevel], digits = 2)
+      Freq <- data.frame(sort(table(NRisk),decreasing=TRUE))
+      Freq[,1] <- as.numeric(as.character(Freq[,1]))
+      meanR <- mean(as.numeric(as.character(Freq$Freq)))
+      sdR <- sd(as.numeric(as.character(Freq$Freq)))
+      n <- length(Freq$Freq)
+      error <- qt(0.975,df=n-1)*sdR/sqrt(n)
+      right <- round(meanR+error, digits = 0)
+      rightBound <- data.frame(Freq[Freq$Freq == right, ])
+      rightB <- rightBound$NRisk[1]
+
+    }
+    return (rightB)
+  }
+
+   leftNRisk <- getLeft(1)
+   rightNRisk<- getRight(1)
+# 
+   leftLRisk <- getLeft(2)
+   rightLRisk<- getRight(2)
+
+   leftVHRisk <- getLeft(3)
+   rightVHRisk<- getRight(3)
+  #
+   leftMoRisk <- getLeft(4)
+   rightMoRisk<- getRight(4)
+
+   leftHRisk <- getLeft(5)
+   rightHRisk<- getRight(5)
+  #
+  RiskCorConfi <- data.frame(c(leftNRisk,leftLRisk,leftVHRisk,leftMoRisk,leftHRisk))
+  RiskCorConfi$Right <- data.frame(c(rightNRisk,rightLRisk,rightVHRisk,rightMoRisk,rightHRisk))
+  RiskCorConfi$rn <- c('NRisk','LRisk','VHRisk','MoRisk','HRisk')
+
+  names(RiskCorConfi) <- c('left','right','rn')
+  return(RiskCorConfi)
+}
+
+ConfidenceInte <- GetConfi('aww','aww', 100)
+
 
 
 ```
+
 
 here we compare the LIWC in selected themes, are the redditors of various risk level consistent in their psychological expressions across topics?
 ```{r}
