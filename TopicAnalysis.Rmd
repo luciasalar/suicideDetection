@@ -9,6 +9,7 @@ output: html_document
 require(data.table)
 require(fastDummies)
 library(psych)
+require(stargazer)
 ```
 
 ## R Markdown
@@ -16,8 +17,8 @@ library(psych)
 This script compare the LIWC score in each level
 
 ```{r, include FALSE}
-path = '/Users/lucia/phd_work/Clpsy'
-#path = '/home/lucia/phd_work/shareTask/'
+#path = '/Users/lucia/phd_work/Clpsy'
+path = '/home/lucia/phd_work/shareTask/'
 setwd(path)
 #labels <- read.csv("./data/clpsych19_training_data/crowd_train.csv")
 post <- read.csv("./data/clpsych19_training_data/Btrain.csv")
@@ -28,10 +29,6 @@ allLabel <- read.csv("./data/clpsych19_training_data/crowd_train.csv")
 
 ```
 
-```{r}
-setwd(path)
-post <- read.csv("./data/clpsych19_training_data/task_B_train.posts.csv")
-```
 
 now we compare the LIWC in SW posts
 ```{r pressure, echo=FALSE}
@@ -205,7 +202,7 @@ GetAllCor <- function(topics, boostrapN){
   
 }
 
-system.time(allCor <- GetAllCor(l, 10))
+system.time(allCor <- GetAllCor(l, 100))
 
 #now we create the latex table
 allCorLat <- data.frame(t(allCor))
