@@ -6,18 +6,13 @@ require(stargazer)
 
 ## R Markdown
 
-#the correlation between the frequency of posting and their risk level among redditors who have posted in a specific target subreddit. In the correlation 
-#analysis, we exclude redditors who didn't post in the target subreddit because whether a redditor post in certain subreddit depends on whether they aware the existence of the sub. 
-#The awareness of this information might not related be relevant to redditors' psychological traits and behavior. 
-
-#We conduct a permutation correlation.  In each pairewise correlation, we scramble the row order of the variable. 
-
-
-#Here we compute the correlation between each topic and each risk level. All the users a re 
+#This script compare the LIWC score in each level
 
 
 #path = '/Users/lucia/phd_work/Clpsy'
-path = '/home/lucia/phd_work/shareTask/'
+#path = '/home/lucia/phd_work/shareTask/'
+path = '/afs/inf.ed.ac.uk/user/s16/s1690903/share/shareTask'
+
 setwd(path)
 #labels <- read.csv("./data/clpsych19_training_data/crowd_train.csv")
 post <- read.csv("./data/clpsych19_training_data/Btrain.csv")
@@ -36,6 +31,15 @@ Top100 <- data.frame(table(NoSW$subreddit))
 Top100<- Top100[order(-Top100$Freq),]
 Top100 <- Top100[1:100, ]
 
+#count topic
+groups <- post[,c('user_id','raw_label')]
+#number of people in each group
+groups2 <- groups[!duplicated(groups$user_id),]
+NumP <- data.frame(table(groups2$raw_label))
+
+
+
+
 GetTopicCor <- function(theme, themeName, bootstrapN){
   #generate a df for correlation
   GetDf<- function(theme, themeName){
@@ -43,8 +47,18 @@ GetTopicCor <- function(theme, themeName, bootstrapN){
     # aggregate theme count on user level
     Seltheme <- post[post$themeCount == 1,]
     themes <- data.frame(table(Seltheme$user_id))
-    colnames(themes) <- c('user_id', themeName)
-    groupTheme <- merge(themes, groups, by = 'user_id', all.x = T)
+    post$themeCount<- ifelse(post$subreddit == 'aww' , 1, 0)
+    Seltheme <- post[post$themeCount == 1,]
+    themes <- data.frame(table(Seltheme$user_id))
+    extra <- data.frame(post[, c('user_id')])
+    extra <- data.frame(extra[!duplicated(extra[,1]), ])
+    extra$Freq <- rep(0,993) 
+    colnames(extra) <- c('user_id', 'Freq')
+    extra$Freq <- data.frame(ifelse(extra$user_id %in% themes$Var1, themes$Freq, extra$Freq))
+    
+    colnames(extra) <- c('user_id', themeName)
+
+    groupTheme <- merge(extra, groups, by = 'user_id', all.x = T)
     groupTheme <- groupTheme[!duplicated(groupTheme$user_id),]
     groupTheme$raw_label <- as.character(groupTheme$raw_label)
     groupTheme$raw_label[groupTheme$raw_label==""] <- 'NRisk'
@@ -55,6 +69,7 @@ GetTopicCor <- function(theme, themeName, bootstrapN){
     
     return(groupTheme)
   }
+  
   #convert category to dummy vari then do correlation
   GetThemeCor <- function(groupTheme){
     # #permutation (sample the order of the data)
@@ -93,7 +108,6 @@ GetTopicCor <- function(theme, themeName, bootstrapN){
 #get topic correlation with risk level
 l = Top100$Var1
 
-l = c('gaming','aww')
 
 GetAllCor <- function(topics, boostrapN){
   preCor = NULL
@@ -115,7 +129,7 @@ GetAllCor <- function(topics, boostrapN){
   
 }
 
-system.time(allCor <- GetAllCor(l, 10))
+system.time(allCor <- GetAllCor(l, 100))
 
 #now we create the latex table
 allCorLat <- data.frame(t(allCor))
@@ -135,14 +149,13 @@ ConvertNum <- function(df){
 }
 
 allCorLat2 <- ConvertNum(allCorLat)
-#allCorLat2 <- data.frame(sapply(allCorLat2, roundup))
 setDT(allCorLat, keep.rownames = TRUE)[]
 allCorLat2$subreddit<- allCorLat$rn
 
 #stargazer(allCorLat2, type = 'latex',  summary=FALSE, out='/Users/lucia/phd_work/Clpsy/data/clpsych19_training_data/allCorLat2.csv', out.header=FALSE)
 
 setwd(path)
-writeWorksheetToFile("./suicideDetection/features/allCorLat2.xlsx", 
+writeWorksheetToFile("./suicideDetection/features/allCorLat1000.xlsx", 
                      data = allCorLat2, 
                      sheet = "cor", 
                      header = TRUE,

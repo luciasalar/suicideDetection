@@ -9,7 +9,6 @@ output: html_document
 require(data.table)
 require(fastDummies)
 library(psych)
-require(stargazer)
 ```
 
 ## R Markdown

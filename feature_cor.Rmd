@@ -1,0 +1,49 @@
+---
+title: "feature_cor"
+author: "lushi"
+date: "18/05/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+require(dplyr)
+require(Hmisc)
+require(MASS)
+require(ordinal)
+```
+
+## correlation of features
+
+```{r cars}
+path = '/Users/lucia/hawksworth/shareTask/suicideDetection/features/'
+setwd(path)
+features <- read.csv('temp2.csv')
+
+features$raw_label <- dplyr::recode(features$raw_label, a = 0, b = 1, c = 2, d = 3)
+features <- features[complete.cases(features), ]
+
+cor_df <- rcorr(as.matrix(features[4:135]))
+write.csv(cor_df[3], 'feature_cor_p.csv') # variables are highly correlated with each other r > 0.6
+```
+
+## ordinal regression 
+
+```{r pressure, echo=FALSE}
+regression_data <- features[4:100]
+
+regression_data  <- mutate_all(regression_data, function(x) as.numeric(as.character(x)))
+#regression_data$raw_label <- regression_data$raw_label +1
+regression_data$raw_label<- factor(regression_data$raw_label, levels=0:3, ordered=T)
+
+m <- polr(formula = raw_label ~., data = regression_data, Hess=TRUE)
+
+ctable <- coef(summary(m))
+p <- pnorm(abs(ctable[, "t value"]), lower.tail = FALSE) * 2
+ctable <- cbind(ctable, "p value" = p)
+#m<- clm(formula = raw_label ~.,data = regression_data)
+summary(m)
+
+d <- diamonds
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

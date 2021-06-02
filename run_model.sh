@@ -1,0 +1,1 @@
+nice python /disk/data/share/s1690903/shareTask/suicideDetection/new_pipeline.py                               
